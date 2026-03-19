@@ -1,81 +1,120 @@
 import { create } from 'zustand';
-import { attendanceService } from '../features/attendance/attendanceService';
+import { attendanceService, Activity } from '../features/attendance/attendanceService';
 import { calculateCurrentStreak, calculateLongestStreak } from '../utils/streakUtils';
 import { todayStr } from '../utils/dateUtils';
 
-interface AttendanceState {
-  /** All dates logged in YYYY-MM-DD format */
-  loggedDates: string[];
-  /** Consecutive days logged ending at today (or yesterday) */
+interface ActivityStats {
   currentStreak: number;
-  /** Maximum consecutive days ever recorded */
   longestStreak: number;
-  /** Whether the user has already logged in today */
   isTodayLogged: boolean;
-  /** True while an async action is in progress */
+}
+
+interface AttendanceState {
+  activities: Activity[];
+  logs: Record<string, string[]>;
+  selectedActivityId: string | null;
   isLoading: boolean;
 
   // Actions
-  /** Load persisted data from AsyncStorage. Call this on app start. */
   hydrate: () => Promise<void>;
-  /** Log today. Prevents duplicates. Recalculates streaks automatically. */
-  logToday: () => Promise<void>;
-  /** Reset all data (dev utility). */
+  createActivity: (name: string) => Promise<void>;
+  editActivity: (id: string, name: string) => Promise<void>;
+  deleteActivity: (id: string) => Promise<void>;
+  selectActivity: (id: string) => void;
+  logToday: (activityId: string) => Promise<void>;
   resetAll: () => Promise<void>;
+
+  // Derived getters
+  getActivityStats: (activityId: string) => ActivityStats;
 }
 
-/**
- * Helper to recalculate derived state from a list of logged dates.
- */
-const deriveStats = (loggedDates: string[]) => ({
-  currentStreak: calculateCurrentStreak(loggedDates),
-  longestStreak: calculateLongestStreak(loggedDates),
-  isTodayLogged: loggedDates.includes(todayStr()),
-});
-
 export const useAttendanceStore = create<AttendanceState>((set, get) => ({
-  loggedDates: [],
-  currentStreak: 0,
-  longestStreak: 0,
-  isTodayLogged: false,
+  activities: [],
+  logs: {},
+  selectedActivityId: null,
   isLoading: false,
 
-  /**
-   * Hydrate the store from AsyncStorage.
-   * Should be called once when the app mounts (in App.tsx or a top-level component).
-   */
   hydrate: async () => {
     set({ isLoading: true });
-    const dates = await attendanceService.getLoggedDates();
-    set({ loggedDates: dates, ...deriveStats(dates), isLoading: false });
+    const activities = await attendanceService.getActivities();
+    const logs = await attendanceService.getLogs();
+    set({ activities, logs, isLoading: false });
   },
 
-  /**
-   * Log today's date.
-   * - Calls the service (idempotent — no-op if already logged).
-   * - Updates loggedDates and recalculates streak stats.
-   */
-  logToday: async () => {
-    const { isTodayLogged } = get();
-    if (isTodayLogged) return; // Guard: already logged today
+  createActivity: async (name: string) => {
+    const { activities } = get();
+    const newActivity: Activity = {
+      id: Date.now().toString() + Math.random().toString(36).substring(2, 9),
+      name,
+      createdAt: Date.now(),
+    };
+    
+    const updatedActivities = [...activities, newActivity];
+    await attendanceService.saveActivities(updatedActivities);
+    set({ activities: updatedActivities });
+  },
+
+  editActivity: async (id: string, name: string) => {
+    const { activities } = get();
+    const updatedActivities = activities.map(a => a.id === id ? { ...a, name } : a);
+    await attendanceService.saveActivities(updatedActivities);
+    set({ activities: updatedActivities });
+  },
+
+  deleteActivity: async (id: string) => {
+    const { activities, logs, selectedActivityId } = get();
+    
+    // Remove activity
+    const updatedActivities = activities.filter(a => a.id !== id);
+    await attendanceService.saveActivities(updatedActivities);
+    
+    // Remove logs
+    const updatedLogs = { ...logs };
+    delete updatedLogs[id];
+    await attendanceService.saveLogs(updatedLogs);
+
+    set({ 
+      activities: updatedActivities, 
+      logs: updatedLogs,
+      selectedActivityId: selectedActivityId === id ? null : selectedActivityId
+    });
+  },
+
+  selectActivity: (id: string) => {
+    set({ selectedActivityId: id });
+  },
+
+  logToday: async (activityId: string) => {
+    const { logs } = get();
+    const today = todayStr();
+    const activityLogs = logs[activityId] || [];
+
+    if (activityLogs.includes(today)) return; // Guard: already logged today
 
     set({ isLoading: true });
-    await attendanceService.logToday();
-    const today = todayStr();
-    const updatedDates = [...get().loggedDates, today];
-    set({ loggedDates: updatedDates, ...deriveStats(updatedDates), isLoading: false });
+    await attendanceService.logToday(activityId);
+    
+    const updatedLogs = { ...logs };
+    updatedLogs[activityId] = [...activityLogs, today];
+    
+    set({ logs: updatedLogs, isLoading: false });
   },
 
-  /**
-   * Clear all stored data and reset the store to initial state.
-   */
   resetAll: async () => {
     await attendanceService.clearAll();
     set({
-      loggedDates: [],
-      currentStreak: 0,
-      longestStreak: 0,
-      isTodayLogged: false,
+      activities: [],
+      logs: {},
+      selectedActivityId: null,
     });
+  },
+
+  getActivityStats: (activityId: string) => {
+    const logs = get().logs[activityId] || [];
+    return {
+      currentStreak: calculateCurrentStreak(logs),
+      longestStreak: calculateLongestStreak(logs),
+      isTodayLogged: logs.includes(todayStr()),
+    };
   },
 }));

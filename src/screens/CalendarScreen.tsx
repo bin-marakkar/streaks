@@ -82,7 +82,8 @@ const buildMarkedDates = (
 };
 
 export const CalendarScreen: React.FC = () => {
-  const { loggedDates } = useAttendanceStore();
+  const { logs, selectedActivityId } = useAttendanceStore();
+  const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const today = todayStr();
   const markedDates = buildMarkedDates(loggedDates, today);
 

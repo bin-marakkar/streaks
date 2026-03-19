@@ -19,8 +19,15 @@ import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { formatDisplayDate, todayStr } from '../utils/dateUtils';
 
 export const DashboardScreen: React.FC = () => {
-  const { isTodayLogged, currentStreak, longestStreak, logToday, isLoading } =
-    useAttendanceStore();
+  const { selectedActivityId, getActivityStats, logToday, isLoading } = useAttendanceStore();
+  const stats = selectedActivityId ? getActivityStats(selectedActivityId) : { isTodayLogged: false, currentStreak: 0, longestStreak: 0 };
+  const { isTodayLogged, currentStreak, longestStreak } = stats;
+
+  const handleLogToday = () => {
+    if (selectedActivityId) {
+      logToday(selectedActivityId);
+    }
+  };
 
   const headerScale = useSharedValue(0.9);
   const headerStyle = useAnimatedStyle(() => ({
@@ -90,7 +97,7 @@ export const DashboardScreen: React.FC = () => {
       {/* Log Button */}
       <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.buttonWrapper}>
         <LogButton
-          onPress={logToday}
+          onPress={handleLogToday}
           isLogged={isTodayLogged}
           isLoading={isLoading}
         />

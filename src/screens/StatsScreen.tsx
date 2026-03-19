@@ -13,8 +13,10 @@ import {
 } from '../utils/dateUtils';
 
 export const StatsScreen: React.FC = () => {
-  const { loggedDates, currentStreak, longestStreak, resetAll } =
-    useAttendanceStore();
+  const { logs, selectedActivityId, getActivityStats, resetAll } = useAttendanceStore();
+  const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
+  const stats = selectedActivityId ? getActivityStats(selectedActivityId) : { currentStreak: 0, longestStreak: 0 };
+  const { currentStreak, longestStreak } = stats;
 
   const thisMonthLogged = loggedDaysThisMonth(loggedDates);
   const thisMonthTotal = totalDaysPassedThisMonth();

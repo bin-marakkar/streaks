@@ -1,59 +1,70 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { todayStr } from '../../utils/dateUtils';
 
-const STORAGE_KEY = 'streak_logged_dates';
+export interface Activity {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
+const ACTIVITIES_KEY = 'streak_activities';
+const LOGS_KEY = 'streak_logs';
 
 /**
  * Attendance Service
- * Handles persistence of logged dates via AsyncStorage.
- * All dates are stored as YYYY-MM-DD strings in a JSON array.
+ * Handles persistence of activities and logged dates via AsyncStorage.
  */
 export const attendanceService = {
-  /**
-   * Load all logged dates from storage.
-   * Returns an empty array if nothing has been stored.
-   */
-  getLoggedDates: async (): Promise<string[]> => {
+  getActivities: async (): Promise<Activity[]> => {
     try {
-      const raw = await AsyncStorage.getItem(STORAGE_KEY);
+      const raw = await AsyncStorage.getItem(ACTIVITIES_KEY);
       if (!raw) return [];
-      return JSON.parse(raw) as string[];
+      return JSON.parse(raw) as Activity[];
     } catch {
       return [];
     }
   },
 
-  /**
-   * Log today's date. Idempotent — calling this multiple times on the
-   * same day has no effect (today is only recorded once).
-   *
-   * @returns true if the date was newly logged, false if already logged.
-   */
-  logToday: async (): Promise<boolean> => {
-    const dates = await attendanceService.getLoggedDates();
+  saveActivities: async (activities: Activity[]): Promise<void> => {
+    await AsyncStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities));
+  },
+
+  updateActivity: async (id: string, newName: string): Promise<void> => {
+    const activities = await attendanceService.getActivities();
+    const updated = activities.map(a => a.id === id ? { ...a, name: newName } : a);
+    await attendanceService.saveActivities(updated);
+  },
+
+  getLogs: async (): Promise<Record<string, string[]>> => {
+    try {
+      const raw = await AsyncStorage.getItem(LOGS_KEY);
+      if (!raw) return {};
+      return JSON.parse(raw) as Record<string, string[]>;
+    } catch {
+      return {};
+    }
+  },
+
+  saveLogs: async (logs: Record<string, string[]>): Promise<void> => {
+    await AsyncStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+  },
+
+  logToday: async (activityId: string): Promise<boolean> => {
+    const logs = await attendanceService.getLogs();
     const today = todayStr();
 
-    if (dates.includes(today)) {
+    const activityLogs = logs[activityId] || [];
+    if (activityLogs.includes(today)) {
       return false; // already logged today
     }
 
-    const updated = [...dates, today];
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    logs[activityId] = [...activityLogs, today];
+    await attendanceService.saveLogs(logs);
     return true;
   },
 
-  /**
-   * Returns true if today has already been logged.
-   */
-  isTodayLogged: async (): Promise<boolean> => {
-    const dates = await attendanceService.getLoggedDates();
-    return dates.includes(todayStr());
-  },
-
-  /**
-   * Clear all logged data. Utility for development / reset flow.
-   */
   clearAll: async (): Promise<void> => {
-    await AsyncStorage.removeItem(STORAGE_KEY);
+    await AsyncStorage.removeItem(ACTIVITIES_KEY);
+    await AsyncStorage.removeItem(LOGS_KEY);
   },
 };
