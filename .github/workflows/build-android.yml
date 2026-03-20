@@ -10,6 +10,8 @@ jobs:
   build:
     name: Build Android Release APK
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout repository
@@ -21,7 +23,7 @@ jobs:
           node-version: 20
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 9
           run_install: false
