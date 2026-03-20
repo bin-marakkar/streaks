@@ -13,7 +13,7 @@ import {
 } from '../utils/dateUtils';
 
 export const StatsScreen: React.FC = () => {
-  const { logs, selectedActivityId, getActivityStats, resetAll } = useAttendanceStore();
+  const { logs, selectedActivityId, getActivityStats, resetActivityData } = useAttendanceStore();
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const stats = selectedActivityId ? getActivityStats(selectedActivityId) : { currentStreak: 0, longestStreak: 0 };
   const { currentStreak, longestStreak } = stats;
@@ -30,14 +30,16 @@ export const StatsScreen: React.FC = () => {
 
   const handleReset = () => {
     Alert.alert(
-      'Reset All Data',
-      'This will permanently delete all your logged days and streak history. Are you sure?',
+      'Reset Activity Data',
+      'This will permanently delete all your logged days and streak history for this activity. Are you sure?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Reset',
           style: 'destructive',
-          onPress: () => resetAll(),
+          onPress: () => {
+            if (selectedActivityId) resetActivityData(selectedActivityId);
+          },
         },
       ]
     );
@@ -107,7 +109,7 @@ export const StatsScreen: React.FC = () => {
       {/* Reset button */}
       <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.resetWrapper}>
         <Text style={styles.resetButton} onPress={handleReset}>
-          🗑  Reset All Data
+          🗑  Reset Activity Data
         </Text>
       </Animated.View>
     </ScrollView>

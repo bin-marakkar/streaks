@@ -22,7 +22,7 @@ interface AttendanceState {
   deleteActivity: (id: string) => Promise<void>;
   selectActivity: (id: string) => void;
   logToday: (activityId: string) => Promise<void>;
-  resetAll: () => Promise<void>;
+  resetActivityData: (id: string) => Promise<void>;
 
   // Derived getters
   getActivityStats: (activityId: string) => ActivityStats;
@@ -100,13 +100,12 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     set({ logs: updatedLogs, isLoading: false });
   },
 
-  resetAll: async () => {
-    await attendanceService.clearAll();
-    set({
-      activities: [],
-      logs: {},
-      selectedActivityId: null,
-    });
+  resetActivityData: async (id: string) => {
+    const { logs } = get();
+    const updatedLogs = { ...logs };
+    delete updatedLogs[id];
+    await attendanceService.saveLogs(updatedLogs);
+    set({ logs: updatedLogs });
   },
 
   getActivityStats: (activityId: string) => {
