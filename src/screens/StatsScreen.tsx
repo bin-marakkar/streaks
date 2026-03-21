@@ -7,22 +7,25 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { StreakBadge } from '../components/StreakBadge';
 import { MonthlyProgress } from '../components/MonthlyProgress';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { useTheme } from '../hooks/useTheme';
 import {
   loggedDaysThisMonth,
   totalDaysPassedThisMonth,
 } from '../utils/dateUtils';
 
 export const StatsScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const { logs, selectedActivityId, getActivityStats, resetActivityData } = useAttendanceStore();
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
-  const stats = selectedActivityId ? getActivityStats(selectedActivityId) : { currentStreak: 0, longestStreak: 0 };
+  const stats = selectedActivityId
+    ? getActivityStats(selectedActivityId)
+    : { currentStreak: 0, longestStreak: 0 };
   const { currentStreak, longestStreak } = stats;
 
   const thisMonthLogged = loggedDaysThisMonth(loggedDates);
   const thisMonthTotal = totalDaysPassedThisMonth();
   const totalLogged = loggedDates.length;
 
-  // Find the first ever logged date
   const firstLoggedDate =
     loggedDates.length > 0
       ? dayjs([...loggedDates].sort()[0]).format('MMMM D, YYYY')
@@ -47,14 +50,16 @@ export const StatsScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.scrollView}
+      style={[styles.scrollView, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
       <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
-        <Text style={styles.title}>Your Stats</Text>
-        <Text style={styles.subtitle}>Track your consistency over time</Text>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Your Stats</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+          Track your consistency over time
+        </Text>
       </Animated.View>
 
       {/* Streak Badges */}
@@ -64,14 +69,15 @@ export const StatsScreen: React.FC = () => {
           count={currentStreak}
           emoji="🔥"
           accent={Colors.primary}
-          accentLight={Colors.primaryContainer}
+          accentLight={colors.primaryContainer}
         />
+        <View style={styles.badgeDivider} />
         <StreakBadge
           label="Best Streak"
           count={longestStreak}
           emoji="🏆"
           accent={Colors.warning}
-          accentLight={Colors.warningLight}
+          accentLight={isDark ? '#3A2B0A' : Colors.warningLight}
         />
       </Animated.View>
 
@@ -85,23 +91,32 @@ export const StatsScreen: React.FC = () => {
 
       {/* Summary Cards */}
       <Animated.View entering={FadeInDown.delay(300).springify()} style={styles.summaryGrid}>
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryValue}>{totalLogged}</Text>
-          <Text style={styles.summaryLabel}>Total Days Logged</Text>
+        <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.summaryValue, { color: Colors.primary }]}>{totalLogged}</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>
+            Total Days Logged
+          </Text>
         </View>
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryValue}>{thisMonthLogged}</Text>
-          <Text style={styles.summaryLabel}>This Month</Text>
+        <View style={[styles.summaryCard, { backgroundColor: colors.surface }]}>
+          <Text style={[styles.summaryValue, { color: Colors.primary }]}>{thisMonthLogged}</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textSecondary }]}>This Month</Text>
         </View>
       </Animated.View>
 
       {/* First Login */}
       {firstLoggedDate && (
-        <Animated.View entering={FadeInDown.delay(400).springify()} style={styles.infoCard}>
+        <Animated.View
+          entering={FadeInDown.delay(400).springify()}
+          style={[styles.infoCard, { backgroundColor: colors.surface }]}
+        >
           <Text style={styles.infoEmoji}>📅</Text>
           <View>
-            <Text style={styles.infoLabel}>Journey Started</Text>
-            <Text style={styles.infoValue}>{firstLoggedDate}</Text>
+            <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+              Journey Started
+            </Text>
+            <Text style={[styles.infoValue, { color: colors.textPrimary }]}>
+              {firstLoggedDate}
+            </Text>
           </View>
         </Animated.View>
       )}
@@ -119,7 +134,6 @@ export const StatsScreen: React.FC = () => {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: Spacing.lg,
@@ -131,16 +145,17 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.headlineLarge,
-    color: Colors.textPrimary,
   },
   subtitle: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
   badgeRow: {
     flexDirection: 'row',
     marginBottom: Spacing.lg,
+  },
+  badgeDivider: {
+    width: Spacing.sm,
   },
   section: {
     marginBottom: Spacing.lg,
@@ -152,7 +167,6 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     flex: 1,
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     alignItems: 'center',
@@ -164,18 +178,15 @@ const styles = StyleSheet.create({
   },
   summaryValue: {
     ...Typography.displayMedium,
-    color: Colors.primary,
   },
   summaryLabel: {
     ...Typography.bodySmall,
-    color: Colors.textSecondary,
     marginTop: Spacing.xs,
     textAlign: 'center',
   },
   infoCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
     marginBottom: Spacing.lg,
@@ -191,11 +202,9 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     ...Typography.bodySmall,
-    color: Colors.textSecondary,
   },
   infoValue: {
     ...Typography.titleMedium,
-    color: Colors.textPrimary,
     marginTop: 2,
   },
   resetWrapper: {

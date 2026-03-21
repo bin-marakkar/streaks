@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  TextInput, 
-  TouchableOpacity, 
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
   Modal,
   KeyboardAvoidingView,
   Platform,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Pressable,
 } from 'react-native';
 import { Text } from 'react-native-paper';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { useTheme } from '../hooks/useTheme';
 
 export interface ActivityFormModalProps {
   visible: boolean;
@@ -29,7 +31,9 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
   onClose,
   onSave,
 }) => {
+  const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
+  const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
@@ -42,130 +46,197 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
     onSave(name.trim());
   };
 
+  const isEditing = !!editingItemId;
+  const canSave = name.trim().length > 0;
+
   return (
     <Modal
       visible={visible}
       transparent={true}
-      animationType="fade"
+      animationType="none"
       onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <KeyboardAvoidingView 
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              style={styles.modalContent}
-            >
-              <Animated.View entering={FadeInDown.duration(200)} style={styles.modalCard}>
-                <Text style={styles.modalTitle}>
-                  {editingItemId ? 'Edit Habit' : 'New Habit'}
-                </Text>
-                
-                <TextInput
-                  style={styles.modalInput}
-                  placeholder="e.g., Reading 10 Pages"
-                  placeholderTextColor={Colors.textDisabled}
-                  value={name}
-                  onChangeText={setName}
-                  onSubmitEditing={handleSave}
-                  autoFocus={true}
-                  maxLength={40}
-                />
+      {/* Backdrop */}
+      <Animated.View entering={FadeIn.duration(180)} style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      </Animated.View>
 
-                <View style={styles.modalActions}>
-                  <TouchableOpacity style={styles.modalButtonCancel} onPress={onClose}>
-                    <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-                  </TouchableOpacity>
-                  
-                  <TouchableOpacity 
-                    style={[styles.modalButtonAdd, !name.trim() && styles.modalButtonDisabled]} 
-                    onPress={handleSave}
-                    disabled={!name.trim()}
-                  >
-                    <Text style={styles.modalButtonTextAdd}>
-                      {editingItemId ? 'Save' : 'Create'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </Animated.View>
-            </KeyboardAvoidingView>
-          </TouchableWithoutFeedback>
-        </View>
-      </TouchableWithoutFeedback>
+      {/*
+        KeyboardAvoidingView outside the backdrop so it can push the sheet up
+        without being clipped. Using 'padding' on both platforms gives the most
+        predictable "sheet rises with keyboard" behavior.
+      */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.kavWrapper}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <Animated.View
+          entering={SlideInDown.springify().damping(18).stiffness(180)}
+          exiting={SlideOutDown.duration(200)}
+          style={[styles.sheet, { backgroundColor: colors.surface }]}
+        >
+          {/* Handle bar */}
+          <View style={[styles.handleBar, { backgroundColor: colors.surfaceVariant }]} />
+
+          {/* Title */}
+          <Text style={[styles.title, { color: colors.textPrimary }]}>
+            {isEditing ? 'Edit Habit' : 'New Habit'}
+          </Text>
+
+          {/* Subtitle */}
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            {isEditing
+              ? 'Update the name of your habit'
+              : 'Give your habit a clear, motivating name'}
+          </Text>
+
+          {/* Input */}
+          <View style={[styles.inputWrapper, { backgroundColor: colors.background, borderColor: colors.surfaceVariant }]}>
+            <TextInput
+              ref={inputRef}
+              style={[styles.input, { color: colors.textPrimary }]}
+              placeholder="e.g., Read 10 pages"
+              placeholderTextColor={Colors.textDisabled}
+              value={name}
+              onChangeText={setName}
+              onSubmitEditing={handleSave}
+              autoFocus
+              maxLength={40}
+              returnKeyType="done"
+              selectionColor={Colors.primary}
+            />
+            {name.length > 0 && (
+              <TouchableOpacity onPress={() => setName('')} style={styles.clearBtn} hitSlop={8}>
+                <Text style={styles.clearBtnText}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Character count */}
+          <Text style={[styles.charCount, { color: colors.textSecondary }]}>
+            {name.length}/40
+          </Text>
+
+          {/* Actions */}
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={[styles.btnCancel, { backgroundColor: colors.surfaceVariant }]}
+              onPress={onClose}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.btnCancelText, { color: colors.textSecondary }]}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.btnSave, !canSave && styles.btnSaveDisabled]}
+              onPress={handleSave}
+              disabled={!canSave}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.btnSaveText}>{isEditing ? 'Save Changes' : 'Create Habit'}</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  backdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  kavWrapper: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    width: '100%',
-    padding: Spacing.xl,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalCard: {
-    width: '100%',
-    backgroundColor: Colors.surface,
-    padding: Spacing.lg,
-    paddingTop: Spacing.xl,
-    borderRadius: BorderRadius.xl,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.25,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  modalTitle: {
-    ...Typography.titleLarge,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    textAlign: 'center',
-  },
-  modalInput: {
-    backgroundColor: Colors.background,
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.md,
-    ...Typography.bodyLarge,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.surfaceVariant,
-  },
-  modalActions: {
-    flexDirection: 'row',
     justifyContent: 'flex-end',
+  },
+  sheet: {
+    borderTopLeftRadius: BorderRadius.xl,
+    borderTopRightRadius: BorderRadius.xl,
+    paddingTop: Spacing.sm,
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+    // Shadow for the sheet
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 16,
+  },
+  handleBar: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginBottom: Spacing.lg,
+    marginTop: Spacing.xs,
+  },
+  title: {
+    ...Typography.headlineLarge,
+    marginBottom: Spacing.xs,
+  },
+  subtitle: {
+    ...Typography.bodyMedium,
+    lineHeight: 20,
+    marginBottom: Spacing.lg,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  input: {
+    flex: 1,
+    ...Typography.bodyLarge,
+    paddingVertical: Spacing.md,
+  },
+  clearBtn: {
+    paddingLeft: Spacing.sm,
+  },
+  clearBtnText: {
+    fontSize: 14,
+    color: Colors.textDisabled,
+  },
+  charCount: {
+    ...Typography.bodySmall,
+    textAlign: 'right',
+    marginBottom: Spacing.xl,
+  },
+  actions: {
+    flexDirection: 'row',
     gap: Spacing.sm,
   },
-  modalButtonCancel: {
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    justifyContent: 'center',
-  },
-  modalButtonTextCancel: {
-    ...Typography.labelLarge,
-    color: Colors.textSecondary,
-  },
-  modalButtonAdd: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.sm,
-    paddingHorizontal: Spacing.lg,
+  btnCancel: {
+    flex: 1,
+    paddingVertical: Spacing.md,
     borderRadius: BorderRadius.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalButtonDisabled: {
+  btnCancelText: {
+    ...Typography.labelLarge,
+    fontWeight: '600',
+  },
+  btnSave: {
+    flex: 2,
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  btnSaveDisabled: {
     backgroundColor: Colors.textDisabled,
   },
-  modalButtonTextAdd: {
+  btnSaveText: {
     ...Typography.labelLarge,
-    color: Colors.surface,
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
 });

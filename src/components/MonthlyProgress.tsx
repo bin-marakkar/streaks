@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { useTheme } from '../hooks/useTheme';
 
 interface MonthlyProgressProps {
   loggedDays: number;
@@ -15,18 +16,19 @@ export const MonthlyProgress: React.FC<MonthlyProgressProps> = ({
   loggedDays,
   totalDays,
 }) => {
+  const { colors } = useTheme();
   const percentage = totalDays > 0 ? Math.min(loggedDays / totalDays, 1) : 0;
   const percentDisplay = Math.round(percentage * 100);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.surface }]}>
       <View style={styles.header}>
-        <Text style={styles.label}>Monthly Progress</Text>
-        <Text style={styles.fraction}>
+        <Text style={[styles.label, { color: colors.textPrimary }]}>Monthly Progress</Text>
+        <Text style={[styles.fraction, { color: colors.textSecondary }]}>
           {loggedDays}/{totalDays} days
         </Text>
       </View>
-      <View style={styles.track}>
+      <View style={[styles.track, { backgroundColor: colors.primaryContainer }]}>
         <View style={[styles.fill, { width: `${percentDisplay}%` }]} />
       </View>
       <Text style={styles.percentage}>{percentDisplay}%</Text>
@@ -36,9 +38,13 @@ export const MonthlyProgress: React.FC<MonthlyProgressProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
@@ -48,15 +54,12 @@ const styles = StyleSheet.create({
   },
   label: {
     ...Typography.titleMedium,
-    color: Colors.textPrimary,
   },
   fraction: {
     ...Typography.bodySmall,
-    color: Colors.textSecondary,
   },
   track: {
     height: 10,
-    backgroundColor: Colors.primaryContainer,
     borderRadius: BorderRadius.full,
     overflow: 'hidden',
   },

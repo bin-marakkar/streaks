@@ -9,6 +9,7 @@ import { ActivitiesScreen } from '../screens/ActivitiesScreen';
 import { Colors, Typography } from '../constants/theme';
 import { Text } from 'react-native';
 import { useAttendanceStore } from '../store/attendanceStore';
+import { useTheme } from '../hooks/useTheme';
 
 export type RootStackParamList = {
   Activities: undefined;
@@ -32,34 +33,36 @@ const TabIcon: React.FC<{ emoji: string; color: string }> = ({ emoji }) => (
 const ActivityTabNavigator = () => {
   const { activities, selectedActivityId } = useAttendanceStore();
   const selectedActivity = activities.find(a => a.id === selectedActivityId);
-  
+  const { colors, isDark } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: Colors.background,
+          backgroundColor: colors.background,
           elevation: 0,
           shadowOpacity: 0,
           borderBottomWidth: 0,
         },
         headerTitleStyle: {
           ...Typography.headlineMedium,
-          color: Colors.textPrimary,
+          color: colors.textPrimary,
         },
+        headerTintColor: Colors.primary,
         tabBarStyle: {
-          backgroundColor: Colors.surface,
+          backgroundColor: colors.surface,
           borderTopWidth: 0,
           elevation: 12,
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
+          shadowOpacity: isDark ? 0.3 : 0.08,
           shadowRadius: 12,
           height: 64,
           paddingBottom: 8,
           paddingTop: 8,
         },
         tabBarActiveTintColor: Colors.primary,
-        tabBarInactiveTintColor: Colors.textDisabled,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarLabelStyle: {
           ...Typography.labelMedium,
           marginTop: 2,
@@ -72,9 +75,7 @@ const ActivityTabNavigator = () => {
         options={{
           headerTitle: selectedActivity ? selectedActivity.name : 'Activity',
           tabBarLabel: 'Home',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="🏠" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon emoji="🏠" color={color} />,
         }}
       />
       <Tab.Screen
@@ -82,9 +83,7 @@ const ActivityTabNavigator = () => {
         component={CalendarScreen}
         options={{
           title: 'Calendar',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="📅" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon emoji="📅" color={color} />,
         }}
       />
       <Tab.Screen
@@ -92,9 +91,7 @@ const ActivityTabNavigator = () => {
         component={StatsScreen}
         options={{
           title: 'Stats',
-          tabBarIcon: ({ color }) => (
-            <TabIcon emoji="📊" color={color} />
-          ),
+          tabBarIcon: ({ color }) => <TabIcon emoji="📊" color={color} />,
         }}
       />
     </Tab.Navigator>
@@ -102,30 +99,33 @@ const ActivityTabNavigator = () => {
 };
 
 export const AppNavigator: React.FC = () => {
+  const { colors } = useTheme();
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName="Activities"
         screenOptions={{
           headerStyle: {
-            backgroundColor: Colors.background,
+            backgroundColor: colors.background,
           },
           headerTitleStyle: {
             ...Typography.headlineMedium,
-            color: Colors.textPrimary,
+            color: colors.textPrimary,
           },
           headerTintColor: Colors.primary,
           headerShadowVisible: false,
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
-        <Stack.Screen 
-          name="Activities" 
-          component={ActivitiesScreen} 
-          options={{ title: 'Habits' }}
+        <Stack.Screen
+          name="Activities"
+          component={ActivitiesScreen}
+          options={{ headerShown: false }}
         />
-        <Stack.Screen 
-          name="ActivityDetail" 
-          component={ActivityTabNavigator} 
+        <Stack.Screen
+          name="ActivityDetail"
+          component={ActivityTabNavigator}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

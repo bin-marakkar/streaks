@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  StyleSheet, 
+import {
+  View,
+  StyleSheet,
   Alert,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native';
 import { Text, FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -14,17 +15,19 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { ActivityCard } from '../components/ActivityCard';
 import { ActivityFormModal } from '../components/ActivityFormModal';
+import { useTheme } from '../hooks/useTheme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Activities'>;
 
 export const ActivitiesScreen: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
-  
+  const { colors, isDark, toggleTheme } = useTheme();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editingItemName, setEditingItemName] = useState<string>('');
-  
+
   const { activities, createActivity, editActivity, deleteActivity, selectActivity, getActivityStats } = useAttendanceStore();
 
   const handleSaveActivity = (name: string) => {
@@ -58,14 +61,13 @@ export const ActivitiesScreen: React.FC = () => {
 
   const handleSelectActivity = (id: string) => {
     if (selectedItemId === id) {
-      setSelectedItemId(null); // toggle off
+      setSelectedItemId(null);
       return;
     }
     if (selectedItemId) {
-      setSelectedItemId(null); // clear other selection
+      setSelectedItemId(null);
       return;
     }
-    
     selectActivity(id);
     navigation.navigate('ActivityDetail');
   };
@@ -94,12 +96,40 @@ export const ActivitiesScreen: React.FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={() => setSelectedItemId(null)}>
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+
         {/* Header */}
         <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
-          <Text style={styles.title}>Your Habits</Text>
-          <Text style={styles.subtitle}>Hold a card to edit or delete</Text>
+          <View style={styles.headerLeft}>
+            <Text style={[styles.title, { color: colors.textPrimary }]}>Your Habits</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+              {activities.length === 0
+                ? 'Tap + to add your first habit'
+                : 'Hold a card to edit or delete'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={toggleTheme}
+            style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.themeToggleEmoji}>{isDark ? '☀️' : '🌙'}</Text>
+          </TouchableOpacity>
         </Animated.View>
+
+        {/* Habit count pill */}
+        {activities.length > 0 && (
+          <Animated.View
+            entering={FadeInDown.delay(50).springify()}
+            style={styles.countPillWrapper}
+          >
+            <View style={[styles.countPill, { backgroundColor: colors.primaryContainer }]}>
+              <Text style={[styles.countPillText, { color: Colors.primary }]}>
+                {activities.length} habit{activities.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
+          </Animated.View>
+        )}
 
         {/* List Section */}
         <Animated.FlatList
@@ -111,7 +141,6 @@ export const ActivitiesScreen: React.FC = () => {
           renderItem={({ item, index }) => {
             const stats = getActivityStats(item.id);
             const isSelectedForAction = selectedItemId === item.id;
-            
             return (
               <ActivityCard
                 id={item.id}
@@ -128,8 +157,11 @@ export const ActivitiesScreen: React.FC = () => {
           }}
           ListEmptyComponent={
             <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>No activities yet.</Text>
-              <Text style={styles.emptySubText}>Add one to start tracking!</Text>
+              <Text style={styles.emptyEmoji}>🌱</Text>
+              <Text style={[styles.emptyText, { color: colors.textPrimary }]}>No habits yet</Text>
+              <Text style={[styles.emptySubText, { color: colors.textSecondary }]}>
+                Tap the + button to add your first habit and start building your streak!
+              </Text>
             </Animated.View>
           }
         />
@@ -137,10 +169,10 @@ export const ActivitiesScreen: React.FC = () => {
         {/* Floating Action Button */}
         <FAB
           icon="plus"
-          style={styles.fab}
+          style={[styles.fab, { backgroundColor: Colors.primary }]}
           onPress={openAddModal}
-          color={Colors.surface}
-          customSize={64}
+          color="#FFFFFF"
+          customSize={58}
         />
 
         {/* Add/Edit Modal */}
@@ -151,7 +183,6 @@ export const ActivitiesScreen: React.FC = () => {
           onClose={closeModal}
           onSave={handleSaveActivity}
         />
-
       </View>
     </TouchableWithoutFeedback>
   );
@@ -160,48 +191,78 @@ export const ActivitiesScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
     paddingTop: Spacing.xl,
   },
   header: {
-    marginBottom: Spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
     paddingHorizontal: Spacing.lg,
+  },
+  headerLeft: {
+    flex: 1,
   },
   title: {
     ...Typography.headlineLarge,
-    color: Colors.textPrimary,
   },
   subtitle: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+    marginTop: 4,
+  },
+  themeToggle: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.md,
+  },
+  themeToggleEmoji: {
+    fontSize: 20,
+  },
+  countPillWrapper: {
+    paddingHorizontal: Spacing.lg,
+    marginBottom: Spacing.sm,
+  },
+  countPill: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 4,
+    borderRadius: BorderRadius.full,
+  },
+  countPillText: {
+    ...Typography.labelMedium,
+    fontWeight: '600',
   },
   listContent: {
     paddingBottom: Spacing.xxl * 2,
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.md,
+    paddingTop: Spacing.sm,
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
+  },
+  emptyEmoji: {
+    fontSize: 48,
+    marginBottom: Spacing.md,
   },
   emptyText: {
     ...Typography.titleLarge,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
+    textAlign: 'center',
   },
   emptySubText: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
   fab: {
     position: 'absolute',
-    margin: Spacing.lg,
-    right: 0,
+    right: Spacing.lg,
     bottom: Spacing.xl,
-    backgroundColor: Colors.primary,
     borderRadius: BorderRadius.full,
   },
 });

@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Animated, { FadeInDown, FadeInRight, FadeOutRight } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { useTheme } from '../hooks/useTheme';
 
 export interface ActivityStats {
   currentStreak: number;
@@ -33,68 +34,107 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onEdit,
   onDelete,
 }) => {
+  const { colors, isDark } = useTheme();
+
+  const cardBg = isDark
+    ? isSelectedForAction
+      ? '#2A264A'
+      : stats.isTodayLogged
+        ? '#181E28'
+        : colors.surface
+    : isSelectedForAction
+      ? '#F3F0FF'
+      : stats.isTodayLogged
+        ? '#FAFFFE'
+        : '#FCFCFF';
+
+  const actionsBg = isDark ? '#2A264A' : '#F3F0FF';
+  const actionBtnBg = isDark ? colors.surfaceVariant : '#FFFFFF';
+
   return (
     <Animated.View entering={FadeInDown.delay(50 + index * 50).springify()}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={[
-          styles.activityCard, 
-          stats.isTodayLogged ? styles.cardLogged : styles.cardPending,
+          styles.card,
+          { backgroundColor: cardBg },
           isSelectedForAction && styles.cardSelected,
         ]}
-        activeOpacity={0.7}
+        activeOpacity={0.75}
         onPress={() => onSelect(id)}
         onLongPress={() => onLongPress(id)}
         delayLongPress={350}
       >
-        <View style={[
-          styles.cardBorderAccent, 
-          { backgroundColor: stats.isTodayLogged ? Colors.success : Colors.primary }
-        ]} />
-        
-        <View style={styles.cardContent}>
-          <View style={styles.activityHeader}>
-            <Text style={styles.activityName} numberOfLines={1}>{name}</Text>
-            
+        {/* Left accent bar */}
+        <View
+          style={[
+            styles.accentBar,
+            { backgroundColor: stats.isTodayLogged ? Colors.success : Colors.primary },
+          ]}
+        />
+
+        {/* Card body */}
+        <View style={styles.cardBody}>
+          {/* Name + status badge */}
+          <View style={styles.cardHeader}>
+            <Text style={[styles.activityName, { color: isDark ? colors.textPrimary : Colors.primaryDark }]} numberOfLines={1}>
+              {name}
+            </Text>
             {!isSelectedForAction && (
               <Animated.View entering={FadeInRight.duration(200)} exiting={FadeOutRight.duration(200)}>
-                <View style={[styles.statusBadge, stats.isTodayLogged ? styles.statusLogged : styles.statusPending]}>
-                   <Text style={[styles.statusText, stats.isTodayLogged ? styles.statusTextLogged : styles.statusTextPending]}>
-                      {stats.isTodayLogged ? 'Logged' : 'Pending'}
-                   </Text>
+                <View style={[
+                  styles.statusBadge,
+                  stats.isTodayLogged
+                    ? { backgroundColor: isDark ? '#0A2E2B' : Colors.successLight }
+                    : { backgroundColor: colors.surfaceVariant },
+                ]}>
+                  <Text style={[
+                    styles.statusText,
+                    { color: stats.isTodayLogged ? Colors.success : colors.textSecondary },
+                  ]}>
+                    {stats.isTodayLogged ? '✓ Logged' : 'Pending'}
+                  </Text>
                 </View>
               </Animated.View>
             )}
           </View>
 
+          {/* Stats row */}
           <View style={styles.statsRow}>
-            <Text style={styles.statLabel}>
-              Current Streak: <Text style={styles.statValue}>{stats.currentStreak} days</Text>
-            </Text>
-            <Text style={styles.statLabel}>
-              Best: <Text style={styles.statValue}>{stats.longestStreak} days</Text>
-            </Text>
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+                {stats.currentStreak}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>day streak 🔥</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: colors.surfaceVariant }]} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: colors.textPrimary }]}>
+                {stats.longestStreak}
+              </Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>best ⚡</Text>
+            </View>
           </View>
         </View>
 
-        {/* Actions Overlay */}
+        {/* Action overlay on long-press */}
         {isSelectedForAction && (
-          <Animated.View 
-            entering={FadeInRight.duration(200).springify()} 
-            style={styles.actionsOverlay}
+          <Animated.View
+            entering={FadeInRight.duration(200).springify()}
+            style={[styles.actionsOverlay, { backgroundColor: actionsBg }]}
           >
             <IconButton
               icon="pencil"
               iconColor={Colors.primary}
-              size={24}
+              size={22}
               onPress={() => onEdit(id, name)}
-              style={styles.actionIconButton}
+              style={[styles.actionBtn, { backgroundColor: actionBtnBg }]}
             />
             <IconButton
               icon="delete"
               iconColor={Colors.error}
-              size={24}
+              size={22}
               onPress={() => onDelete(id, name)}
-              style={styles.actionIconButton}
+              style={[styles.actionBtn, { backgroundColor: actionBtnBg }]}
             />
           </Animated.View>
         )}
@@ -104,40 +144,33 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 };
 
 const styles = StyleSheet.create({
-  activityCard: {
+  card: {
     flexDirection: 'row',
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
-    marginBottom: Spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    marginBottom: Spacing.sm,
     overflow: 'hidden',
     position: 'relative',
-  },
-  cardLogged: {
-    backgroundColor: '#FAFFFE',
-  },
-  cardPending: {
-    backgroundColor: '#FCFCFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 3,
   },
   cardSelected: {
     transform: [{ scale: 0.98 }],
-    backgroundColor: '#F3F0FF',
   },
-  cardBorderAccent: {
-    width: 6,
+  accentBar: {
+    width: 5,
     height: '100%',
     borderTopLeftRadius: BorderRadius.lg,
     borderBottomLeftRadius: BorderRadius.lg,
   },
-  cardContent: {
+  cardBody: {
     flex: 1,
-    padding: Spacing.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm + 2,
   },
-  activityHeader: {
+  cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -145,43 +178,40 @@ const styles = StyleSheet.create({
   },
   activityName: {
     ...Typography.titleLarge,
-    fontWeight: '800',
-    color: Colors.primaryDark,
+    fontWeight: '700',
     flex: 1,
     paddingRight: Spacing.sm,
   },
   statusBadge: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 4,
+    paddingVertical: 3,
     borderRadius: BorderRadius.sm,
-  },
-  statusLogged: {
-    backgroundColor: Colors.successLight,
-  },
-  statusPending: {
-    backgroundColor: Colors.surfaceVariant,
   },
   statusText: {
     ...Typography.labelMedium,
-  },
-  statusTextLogged: {
-    color: Colors.success,
-  },
-  statusTextPending: {
-    color: Colors.textSecondary,
+    fontWeight: '600',
   },
   statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
   },
-  statLabel: {
-    ...Typography.bodyMedium,
-    color: Colors.textSecondary,
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 4,
   },
   statValue: {
-    color: Colors.textPrimary,
-    fontWeight: '600',
+    ...Typography.headlineMedium,
+    lineHeight: 22,
+  },
+  statLabel: {
+    ...Typography.bodySmall,
+  },
+  statDivider: {
+    width: 1,
+    height: 16,
+    marginHorizontal: Spacing.md,
+    borderRadius: 1,
   },
   actionsOverlay: {
     position: 'absolute',
@@ -190,23 +220,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F3F0FF',
-    paddingRight: Spacing.sm,
-    paddingLeft: Spacing.md,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: -10, height: 0 },
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    elevation: 4,
+    paddingHorizontal: Spacing.sm,
+    borderTopRightRadius: BorderRadius.lg,
+    borderBottomRightRadius: BorderRadius.lg,
   },
-  actionIconButton: {
-    margin: 0,
-    backgroundColor: '#FFFFFF',
+  actionBtn: {
+    margin: 4,
+    borderRadius: BorderRadius.md,
     elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    marginHorizontal: Spacing.xs,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
   },
 });

@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Calendar, DateData } from 'react-native-calendars';
+import { Calendar } from 'react-native-calendars';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { buildMarkedDates } from '../utils/calendarUtils';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { CalendarLegend } from '../components/CalendarLegend';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { useTheme } from '../hooks/useTheme';
 import { todayStr } from '../utils/dateUtils';
 
-
 export const CalendarScreen: React.FC = () => {
+  const { colors, isDark } = useTheme();
   const { logs, selectedActivityId } = useAttendanceStore();
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const today = todayStr();
@@ -18,35 +19,38 @@ export const CalendarScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.scrollView}
+      style={[styles.scrollView, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
       {/* Header */}
       <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
-        <Text style={styles.title}>Attendance Calendar</Text>
-        <Text style={styles.subtitle}>
+        <Text style={[styles.title, { color: colors.textPrimary }]}>Attendance Calendar</Text>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
           {loggedDates.length} day{loggedDates.length !== 1 ? 's' : ''} logged total
         </Text>
       </Animated.View>
 
       {/* Calendar */}
-      <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.calendarCard}>
+      <Animated.View
+        entering={FadeInDown.delay(100).springify()}
+        style={[styles.calendarCard, { backgroundColor: colors.surface }]}
+      >
         <Calendar
           current={today}
           markedDates={markedDates}
           maxDate={today}
           enableSwipeMonths={true}
           theme={{
-            backgroundColor: Colors.surface,
-            calendarBackground: Colors.surface,
+            backgroundColor: colors.surface,
+            calendarBackground: colors.surface,
             selectedDayBackgroundColor: Colors.primary,
             selectedDayTextColor: '#FFFFFF',
             todayTextColor: Colors.calendarToday,
-            dayTextColor: Colors.textPrimary,
-            textDisabledColor: Colors.textDisabled,
+            dayTextColor: colors.textPrimary,
+            textDisabledColor: colors.textSecondary,
             arrowColor: Colors.primary,
-            monthTextColor: Colors.textPrimary,
+            monthTextColor: colors.textPrimary,
             textMonthFontWeight: '700',
             textDayFontSize: 14,
             textMonthFontSize: 16,
@@ -69,7 +73,6 @@ export const CalendarScreen: React.FC = () => {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: Spacing.lg,
@@ -81,15 +84,12 @@ const styles = StyleSheet.create({
   },
   title: {
     ...Typography.headlineLarge,
-    color: Colors.textPrimary,
   },
   subtitle: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
     marginTop: Spacing.xs,
   },
   calendarCard: {
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.xl,
     overflow: 'hidden',
     marginBottom: Spacing.md,

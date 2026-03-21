@@ -4,6 +4,7 @@ import {
   StyleSheet,
   ScrollView,
   StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import Animated, {
@@ -17,16 +18,18 @@ import { LogButton } from '../components/LogButton';
 import { StreakBadge } from '../components/StreakBadge';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { formatDisplayDate, todayStr } from '../utils/dateUtils';
+import { useTheme } from '../hooks/useTheme';
 
 export const DashboardScreen: React.FC = () => {
+  const { colors, isDark, toggleTheme } = useTheme();
   const { selectedActivityId, getActivityStats, logToday, isLoading } = useAttendanceStore();
-  const stats = selectedActivityId ? getActivityStats(selectedActivityId) : { isTodayLogged: false, currentStreak: 0, longestStreak: 0 };
+  const stats = selectedActivityId
+    ? getActivityStats(selectedActivityId)
+    : { isTodayLogged: false, currentStreak: 0, longestStreak: 0 };
   const { isTodayLogged, currentStreak, longestStreak } = stats;
 
   const handleLogToday = () => {
-    if (selectedActivityId) {
-      logToday(selectedActivityId);
-    }
+    if (selectedActivityId) logToday(selectedActivityId);
   };
 
   const headerScale = useSharedValue(0.9);
@@ -43,32 +46,47 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <ScrollView
-      style={styles.scrollView}
+      style={[styles.scrollView, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
+      <StatusBar
+        barStyle={isDark ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.background}
+      />
 
-      {/* Header */}
+      {/* Header row: greeting + dark mode toggle */}
       <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
-        <Text style={styles.greeting}>
-          {isTodayLogged ? 'Great job! 🎉' : 'Ready to check in? 👋'}
-        </Text>
-        <Text style={styles.date}>{formatDisplayDate(today)}</Text>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.greeting, { color: colors.textPrimary }]}>
+            {isTodayLogged ? 'Great job! 🎉' : 'Ready to check in? 👋'}
+          </Text>
+          <Text style={[styles.date, { color: colors.textSecondary }]}>
+            {formatDisplayDate(today)}
+          </Text>
+        </View>
+        <TouchableOpacity
+          onPress={toggleTheme}
+          style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.themeToggleEmoji}>{isDark ? '☀️' : '🌙'}</Text>
+        </TouchableOpacity>
       </Animated.View>
 
       {/* Status Card */}
-      <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.statusCard}>
-        <View style={styles.statusIcon}>
-          <Text style={styles.statusEmoji}>
-            {isTodayLogged ? '✅' : '⏳'}
-          </Text>
+      <Animated.View
+        entering={FadeInDown.delay(100).springify()}
+        style={[styles.statusCard, { backgroundColor: colors.surface }]}
+      >
+        <View style={[styles.statusIconWrap, { backgroundColor: colors.surfaceVariant }]}>
+          <Text style={styles.statusEmoji}>{isTodayLogged ? '✅' : '⏳'}</Text>
         </View>
         <View style={styles.statusText}>
-          <Text style={styles.statusTitle}>
+          <Text style={[styles.statusTitle, { color: colors.textPrimary }]}>
             {isTodayLogged ? 'Logged In Today' : 'Not Yet Logged'}
           </Text>
-          <Text style={styles.statusSubtitle}>
+          <Text style={[styles.statusSubtitle, { color: colors.textSecondary }]}>
             {isTodayLogged
               ? 'Your attendance is recorded for today.'
               : 'Tap the button below to log your attendance.'}
@@ -83,14 +101,15 @@ export const DashboardScreen: React.FC = () => {
           count={currentStreak}
           emoji="🔥"
           accent={Colors.primary}
-          accentLight={Colors.primaryContainer}
+          accentLight={colors.primaryContainer}
         />
+        <View style={styles.badgeDivider} />
         <StreakBadge
           label="Longest Streak"
           count={longestStreak}
           emoji="⚡"
           accent={Colors.warning}
-          accentLight={Colors.warningLight}
+          accentLight={isDark ? '#3A2B0A' : Colors.warningLight}
         />
       </Animated.View>
 
@@ -105,7 +124,7 @@ export const DashboardScreen: React.FC = () => {
 
       {/* Motivational Footer */}
       <Animated.View entering={FadeInDown.delay(400).springify()}>
-        <Text style={styles.motivationText}>
+        <Text style={[styles.motivationText, { color: colors.textSecondary }]}>
           {currentStreak === 0
             ? 'Start your streak today! Every journey begins with a single step. 💪'
             : currentStreak < 7
@@ -122,64 +141,74 @@ export const DashboardScreen: React.FC = () => {
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   content: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Spacing.xl,
+    paddingTop: Spacing.lg,
     paddingBottom: Spacing.xxl,
     alignItems: 'center',
   },
   header: {
     width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: Spacing.lg,
+  },
+  headerLeft: {
+    flex: 1,
   },
   greeting: {
     ...Typography.headlineLarge,
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    marginBottom: 4,
   },
   date: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
+  },
+  themeToggle: {
+    width: 44,
+    height: 44,
+    borderRadius: BorderRadius.full,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: Spacing.md,
+  },
+  themeToggleEmoji: {
+    fontSize: 20,
   },
   statusCard: {
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.surface,
     borderRadius: BorderRadius.lg,
     padding: Spacing.md,
-    marginBottom: Spacing.lg,
+    marginBottom: Spacing.md,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 3,
   },
-  statusIcon: {
+  statusIconWrap: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: Colors.surfaceVariant,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
   },
   statusEmoji: {
-    fontSize: 26,
+    fontSize: 24,
   },
   statusText: {
     flex: 1,
   },
   statusTitle: {
     ...Typography.titleLarge,
-    color: Colors.textPrimary,
     marginBottom: 2,
   },
   statusSubtitle: {
     ...Typography.bodySmall,
-    color: Colors.textSecondary,
     lineHeight: 18,
   },
   badgeRow: {
@@ -187,12 +216,16 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: Spacing.xl,
   },
+  badgeDivider: {
+    width: Spacing.sm,
+  },
   buttonWrapper: {
+    width: '100%',
+    alignItems: 'center',
     marginBottom: Spacing.xl,
   },
   motivationText: {
     ...Typography.bodyMedium,
-    color: Colors.textSecondary,
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
     lineHeight: 22,

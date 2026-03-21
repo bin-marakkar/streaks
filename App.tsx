@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAttendanceStore } from './src/store/attendanceStore';
 import { useNotifications } from './src/hooks/useNotifications';
 import { AppNavigator } from './src/navigation/AppNavigator';
-import { lightPaperTheme, Colors } from './src/constants/theme';
+import { ThemeProvider, useTheme } from './src/hooks/useTheme';
 
 /**
  * Root app component.
@@ -15,6 +15,7 @@ import { lightPaperTheme, Colors } from './src/constants/theme';
  */
 function AppContent() {
   const hydrate = useAttendanceStore((state) => state.hydrate);
+  const { isDark, paperTheme } = useTheme();
 
   // Initialize and observe notifications
   useNotifications();
@@ -24,16 +25,20 @@ function AppContent() {
     hydrate();
   }, []);
 
-  return <AppNavigator />;
+  return (
+    <PaperProvider theme={paperTheme}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <AppNavigator />
+    </PaperProvider>
+  );
 }
 
 export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <PaperProvider theme={lightPaperTheme}>
-        <StatusBar style="dark" backgroundColor={Colors.background} />
+      <ThemeProvider>
         <AppContent />
-      </PaperProvider>
+      </ThemeProvider>
     </GestureHandlerRootView>
   );
 }
