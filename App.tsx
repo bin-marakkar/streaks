@@ -4,6 +4,7 @@ import { StatusBar } from 'expo-status-bar';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAttendanceStore } from './src/store/attendanceStore';
+import { useNotifications } from './src/hooks/useNotifications';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { lightPaperTheme, Colors } from './src/constants/theme';
 
@@ -14,6 +15,9 @@ import { lightPaperTheme, Colors } from './src/constants/theme';
  */
 function AppContent() {
   const hydrate = useAttendanceStore((state) => state.hydrate);
+
+  // Initialize and observe notifications
+  useNotifications();
 
   useEffect(() => {
     // Load all persisted logged dates on app launch
