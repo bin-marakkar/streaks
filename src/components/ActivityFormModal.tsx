@@ -12,7 +12,7 @@ import {
   Pressable,
 } from 'react-native';
 import { Text } from 'react-native-paper';
-import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInDown, SlideOutDown, Easing } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { useTheme } from '../hooks/useTheme';
 
@@ -58,7 +58,7 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
       statusBarTranslucent
     >
       {/* Backdrop */}
-      <Animated.View entering={FadeIn.duration(180)} style={styles.backdrop}>
+      <Animated.View entering={FadeIn.duration(120)} style={styles.backdrop}>
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
@@ -73,8 +73,8 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
       >
         <Animated.View
-          entering={SlideInDown.springify().damping(18).stiffness(180)}
-          exiting={SlideOutDown.duration(200)}
+          entering={SlideInDown.duration(200).easing(Easing.out(Easing.cubic))}
+          exiting={SlideOutDown.duration(150).easing(Easing.in(Easing.cubic))}
           style={[styles.sheet, { backgroundColor: colors.surface }]}
         >
           {/* Handle bar */}
