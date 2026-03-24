@@ -50,6 +50,7 @@ export const rescheduleAllNotifications = async (
     content: {
       title: 'Good Morning! ☀️',
       body: 'Time to check in on your streaks!',
+      priority: Notifications.AndroidNotificationPriority.MAX,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
@@ -75,6 +76,7 @@ export const rescheduleAllNotifications = async (
         content: {
           title: 'Night Recap 🌙',
           body: `Don't forget to log: ${names}`,
+          priority: Notifications.AndroidNotificationPriority.MAX,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -86,6 +88,7 @@ export const rescheduleAllNotifications = async (
         content: {
           title: 'Great Job! 🎉',
           body: 'You logged all your activities today. Rest well!',
+          priority: Notifications.AndroidNotificationPriority.MAX,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
@@ -104,6 +107,7 @@ export const rescheduleAllNotifications = async (
       content: {
         title: 'Night Recap 🌙',
         body: `Don't forget to log: ${allNames}`,
+        priority: Notifications.AndroidNotificationPriority.MAX,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
