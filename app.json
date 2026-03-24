@@ -15,7 +15,10 @@
       "supportsTablet": true
     },
     "android": {
-      "permissions": ["android.permission.SCHEDULE_EXACT_ALARM", "android.permission.RECEIVE_BOOT_COMPLETED"],
+      "permissions": [
+        "android.permission.SCHEDULE_EXACT_ALARM",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#6C63FF",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -35,7 +38,14 @@
           "icon": "./assets/icon.png",
           "color": "#ffffff"
         }
-      ]
-    ]
+      ],
+      "expo-sharing"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9b396e49-f59f-498f-9d7a-15b36dfab087"
+      }
+    },
+    "owner": "shabeerkolamban786"
   }
 }

@@ -67,4 +67,30 @@ export const attendanceService = {
     await AsyncStorage.removeItem(ACTIVITIES_KEY);
     await AsyncStorage.removeItem(LOGS_KEY);
   },
+
+  exportData: async (): Promise<string> => {
+    const activities = await attendanceService.getActivities();
+    const logs = await attendanceService.getLogs();
+    return JSON.stringify({ activities, logs });
+  },
+
+  importData: async (jsonData: string): Promise<boolean> => {
+    try {
+      const parsed = JSON.parse(jsonData);
+      if (!parsed || typeof parsed !== 'object') return false;
+      if (!Array.isArray(parsed.activities)) return false;
+      if (!parsed.logs || typeof parsed.logs !== 'object') return false;
+      
+      // Basic validation of activities
+      for (const act of parsed.activities) {
+        if (!act.id || !act.name) return false;
+      }
+
+      await attendanceService.saveActivities(parsed.activities);
+      await attendanceService.saveLogs(parsed.logs);
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };

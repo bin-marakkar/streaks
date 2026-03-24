@@ -6,6 +6,7 @@ import { DashboardScreen } from '../screens/DashboardScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
+import { SettingsScreen } from '../screens/SettingsScreen';
 import { Colors, Typography } from '../constants/theme';
 import { Text } from 'react-native';
 import { useAttendanceStore } from '../store/attendanceStore';
@@ -14,6 +15,7 @@ import { useTheme } from '../hooks/useTheme';
 export type RootStackParamList = {
   Activities: undefined;
   ActivityDetail: undefined;
+  Settings: undefined;
 };
 
 export type TabParamList = {
@@ -127,6 +129,11 @@ export const AppNavigator: React.FC = () => {
           name="ActivityDetail"
           component={ActivityTabNavigator}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ title: 'Settings' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

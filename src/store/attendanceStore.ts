@@ -23,6 +23,8 @@ interface AttendanceState {
   selectActivity: (id: string) => void;
   logToday: (activityId: string) => Promise<void>;
   resetActivityData: (id: string) => Promise<void>;
+  exportData: () => Promise<string>;
+  importData: (jsonData: string) => Promise<boolean>;
 
   // Derived getters
   getActivityStats: (activityId: string) => ActivityStats;
@@ -106,6 +108,21 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     delete updatedLogs[id];
     await attendanceService.saveLogs(updatedLogs);
     set({ logs: updatedLogs });
+  },
+
+  exportData: async () => {
+    return await attendanceService.exportData();
+  },
+
+  importData: async (jsonData: string) => {
+    const success = await attendanceService.importData(jsonData);
+    if (success) {
+      // Re-hydrate state from storage
+      const activities = await attendanceService.getActivities();
+      const logs = await attendanceService.getLogs();
+      set({ activities, logs });
+    }
+    return success;
   },
 
   getActivityStats: (activityId: string) => {

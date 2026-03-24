@@ -109,11 +109,11 @@ export const ActivitiesScreen: React.FC = () => {
             </Text>
           </View>
           <TouchableOpacity
-            onPress={toggleTheme}
+            onPress={() => navigation.navigate('Settings')}
             style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
             activeOpacity={0.7}
           >
-            <Text style={styles.themeToggleEmoji}>{isDark ? '☀️' : '🌙'}</Text>
+            <Text style={styles.themeToggleEmoji}>⚙️</Text>
           </TouchableOpacity>
         </Animated.View>
 
