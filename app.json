@@ -3,6 +3,7 @@
     "name": "Streaks",
     "slug": "streak-counter",
     "version": "1.0.0",
+    "scheme": "streakcounter",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
