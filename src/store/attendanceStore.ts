@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import dayjs from 'dayjs';
 import { attendanceService, Activity } from '../features/attendance/attendanceService';
 import { calculateCurrentStreak, calculateLongestStreak } from '../utils/streakUtils';
 import { todayStr } from '../utils/dateUtils';
@@ -91,13 +92,13 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     const today = todayStr();
     const activityLogs = logs[activityId] || [];
 
-    if (activityLogs.includes(today)) return; // Guard: already logged today
+    if (activityLogs.some(log => log.startsWith(today))) return; // Guard: already logged today
 
     set({ isLoading: true });
     await attendanceService.logToday(activityId);
     
     const updatedLogs = { ...logs };
-    updatedLogs[activityId] = [...activityLogs, today];
+    updatedLogs[activityId] = [...activityLogs, dayjs().toISOString()];
     
     set({ logs: updatedLogs, isLoading: false });
   },
@@ -130,7 +131,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     return {
       currentStreak: calculateCurrentStreak(logs),
       longestStreak: calculateLongestStreak(logs),
-      isTodayLogged: logs.includes(todayStr()),
+      isTodayLogged: logs.some(log => log.startsWith(todayStr())),
     };
   },
 }));

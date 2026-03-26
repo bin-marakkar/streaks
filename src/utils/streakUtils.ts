@@ -18,7 +18,8 @@ import { todayStr, yesterdayStr } from './dateUtils';
 export const calculateCurrentStreak = (loggedDates: string[]): number => {
   if (loggedDates.length === 0) return 0;
 
-  const loggedSet = new Set(loggedDates);
+  const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
+  const loggedSet = new Set(sanitizedDates);
   const today = todayStr();
   const yesterday = yesterdayStr();
 
@@ -54,8 +55,10 @@ export const calculateCurrentStreak = (loggedDates: string[]): number => {
 export const calculateLongestStreak = (loggedDates: string[]): number => {
   if (loggedDates.length === 0) return 0;
 
+  const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
+
   // Sort ascending
-  const sorted = [...loggedDates].sort();
+  const sorted = [...sanitizedDates].sort();
   let longestStreak = 1;
   let currentStreak = 1;
 
@@ -82,6 +85,7 @@ export const calculateLongestStreak = (loggedDates: string[]): number => {
  */
 export const isStreakActive = (loggedDates: string[]): boolean => {
   if (loggedDates.length === 0) return false;
-  const loggedSet = new Set(loggedDates);
+  const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
+  const loggedSet = new Set(sanitizedDates);
   return loggedSet.has(todayStr()) || loggedSet.has(yesterdayStr());
 };

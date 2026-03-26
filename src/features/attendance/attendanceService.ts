@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import dayjs from 'dayjs';
 import { todayStr } from '../../utils/dateUtils';
 
 export interface Activity {
@@ -54,11 +55,11 @@ export const attendanceService = {
     const today = todayStr();
 
     const activityLogs = logs[activityId] || [];
-    if (activityLogs.includes(today)) {
+    if (activityLogs.some(log => log.startsWith(today))) {
       return false; // already logged today
     }
 
-    logs[activityId] = [...activityLogs, today];
+    logs[activityId] = [...activityLogs, dayjs().toISOString()];
     await attendanceService.saveLogs(logs);
     return true;
   },

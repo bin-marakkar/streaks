@@ -24,10 +24,11 @@ export const buildMarkedDates = (
   today: string
 ): MarkedDates => {
   const marked: MarkedDates = {};
-  const loggedSet = new Set(loggedDates);
+  const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
+  const loggedSet = new Set(sanitizedDates);
 
   // Mark all logged dates
-  loggedDates.forEach((date) => {
+  sanitizedDates.forEach((date) => {
     marked[date] = {
       selected: true,
       selectedColor: Colors.calendarLogged,

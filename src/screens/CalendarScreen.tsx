@@ -1,17 +1,23 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { buildMarkedDates } from '../utils/calendarUtils';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { CalendarLegend } from '../components/CalendarLegend';
+import { LogDetailsModal } from '../components/LogDetailsModal';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
 import { useTheme } from '../hooks/useTheme';
 import { todayStr } from '../utils/dateUtils';
+import dayjs from 'dayjs';
 
 export const CalendarScreen: React.FC = () => {
   const { colors, isDark } = useTheme();
+  const [logDetailsVisible, setLogDetailsVisible] = React.useState(false);
+  const [logModalDate, setLogModalDate] = React.useState('');
+  const [logModalTime, setLogModalTime] = React.useState<string | null>(null);
+
   const { logs, selectedActivityId } = useAttendanceStore();
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const today = todayStr();
@@ -41,6 +47,20 @@ export const CalendarScreen: React.FC = () => {
           markedDates={markedDates}
           maxDate={today}
           enableSwipeMonths={true}
+          onDayLongPress={(day) => {
+            const rawLog = loggedDates.find(log => log.startsWith(day.dateString));
+            if (rawLog) {
+              const containsTime = rawLog.includes('T');
+              if (containsTime) {
+                setLogModalDate(dayjs(day.dateString).format('MMMM D, YYYY'));
+                setLogModalTime(dayjs(rawLog).format('h:mm A'));
+              } else {
+                setLogModalDate(dayjs(day.dateString).format('MMMM D, YYYY'));
+                setLogModalTime(null);
+              }
+              setLogDetailsVisible(true);
+            }
+          }}
           theme={{
             backgroundColor: colors.surface,
             calendarBackground: colors.surface,
@@ -66,6 +86,13 @@ export const CalendarScreen: React.FC = () => {
       <Animated.View entering={FadeInDown.delay(200).springify()}>
         <CalendarLegend />
       </Animated.View>
+
+      <LogDetailsModal
+        visible={logDetailsVisible}
+        dateStr={logModalDate}
+        timeStr={logModalTime}
+        onClose={() => setLogDetailsVisible(false)}
+      />
     </ScrollView>
   );
 };
