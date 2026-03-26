@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Colors } from '../constants/theme';
+import { Colors, BorderRadius } from '../constants/theme';
 
 export type MarkedDates = {
   [date: string]: {
@@ -30,9 +30,16 @@ export const buildMarkedDates = (
   // Mark all logged dates
   sanitizedDates.forEach((date) => {
     marked[date] = {
-      selected: true,
-      selectedColor: Colors.calendarLogged,
-      selectedTextColor: '#FFFFFF',
+      customStyles: {
+        container: {
+          backgroundColor: Colors.calendarLogged,
+          borderRadius: BorderRadius.sm,
+        },
+        text: {
+          color: Colors.textPrimary,
+          fontWeight: '600',
+        },
+      },
     };
   });
 
@@ -45,9 +52,16 @@ export const buildMarkedDates = (
     const dateStr = cursor.format('YYYY-MM-DD');
     if (!loggedSet.has(dateStr) && dateStr < today) {
       marked[dateStr] = {
-        marked: true,
-        dotColor: Colors.calendarMissed,
-        selectedTextColor: Colors.textPrimary,
+        customStyles: {
+          container: {
+            backgroundColor: Colors.calendarMissed,
+            borderRadius: BorderRadius.sm,
+          },
+          text: {
+            color: Colors.textPrimary,
+            fontWeight: '600',
+          },
+        },
       };
     }
     cursor = cursor.add(1, 'day');
@@ -57,17 +71,29 @@ export const buildMarkedDates = (
   // Today always gets a distinct orange treatment (overrides if already logged)
   if (loggedSet.has(today)) {
     marked[today] = {
-      selected: true,
-      selectedColor: Colors.calendarLogged,
-      selectedTextColor: '#FFFFFF',
-      marked: true,
-      dotColor: Colors.calendarToday,
+      customStyles: {
+        container: {
+          backgroundColor: Colors.calendarToday,
+          borderRadius: BorderRadius.sm,
+        },
+        text: {
+          color: Colors.textPrimary,
+          fontWeight: 'bold',
+        },
+      },
     };
   } else {
     marked[today] = {
-      selected: true,
-      selectedColor: Colors.calendarToday,
-      selectedTextColor: '#FFFFFF',
+      customStyles: {
+        container: {
+          backgroundColor: Colors.calendarToday,
+          borderRadius: BorderRadius.sm,
+        },
+        text: {
+          color: Colors.textPrimary,
+          fontWeight: 'bold',
+        },
+      },
     };
   }
 

@@ -41,9 +41,9 @@ const styles = StyleSheet.create({
     gap: Spacing.xs,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 12,
+    height: 12,
+    borderRadius: 4,
   },
   label: {
     ...Typography.bodySmall,

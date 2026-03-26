@@ -45,6 +45,7 @@ export const CalendarScreen: React.FC = () => {
         <Calendar
           current={today}
           markedDates={markedDates}
+          markingType={'custom'}
           maxDate={today}
           enableSwipeMonths={true}
           onDayLongPress={(day) => {

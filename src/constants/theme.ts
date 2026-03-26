@@ -33,11 +33,11 @@ export const Colors = {
   textOnPrimary: '#FFFFFF',
 
   // Calendar
-  calendarLogged: '#6C63FF',
-  calendarLoggedDot: '#6C63FF',
-  calendarMissed: '#E63946',
-  calendarMissedDot: '#E63946',
-  calendarToday: '#FF9F1C',
+  calendarLogged: '#50C878',
+  calendarLoggedDot: '#50C878',
+  calendarMissed: '#FF7676',
+  calendarMissedDot: '#FF7676',
+  calendarToday: '#FFB84D',
   calendarTodayText: '#FFFFFF',
 
   // Dark variants
