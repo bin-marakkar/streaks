@@ -3,6 +3,7 @@ import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 import { Text } from 'react-native-paper';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import dayjs from 'dayjs';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { StreakBadge } from '../components/StreakBadge';
 import { MonthlyProgress } from '../components/MonthlyProgress';
@@ -67,7 +68,7 @@ export const StatsScreen: React.FC = () => {
         <StreakBadge
           label="Current Streak"
           count={currentStreak}
-          emoji="🔥"
+          icon="fire"
           accent={Colors.primary}
           accentLight={colors.primaryContainer}
         />
@@ -75,7 +76,7 @@ export const StatsScreen: React.FC = () => {
         <StreakBadge
           label="Best Streak"
           count={longestStreak}
-          emoji="🏆"
+          icon="trophy"
           accent={Colors.warning}
           accentLight={isDark ? '#3A2B0A' : Colors.warningLight}
         />
@@ -109,7 +110,7 @@ export const StatsScreen: React.FC = () => {
           entering={FadeInDown.delay(400).springify()}
           style={[styles.infoCard, { backgroundColor: colors.surface }]}
         >
-          <Text style={styles.infoEmoji}>📅</Text>
+          <Text style={styles.infoEmoji}><FontAwesome5 name="calendar-alt" size={28} color={Colors.primary} /></Text>
           <View>
             <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
               Journey Started
@@ -124,7 +125,7 @@ export const StatsScreen: React.FC = () => {
       {/* Reset button */}
       <Animated.View entering={FadeInDown.delay(500).springify()} style={styles.resetWrapper}>
         <Text style={styles.resetButton} onPress={handleReset}>
-          🗑  Reset Activity Data
+          <FontAwesome5 name="trash-alt" size={16} />  Reset Activity Data
         </Text>
       </Animated.View>
     </ScrollView>

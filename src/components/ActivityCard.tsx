@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Animated, { FadeInDown, FadeInRight, FadeOutRight } from 'react-native-reanimated';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { useTheme } from '../hooks/useTheme';
 
@@ -104,14 +105,18 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
               <Text style={[styles.statValue, { color: colors.textPrimary }]}>
                 {stats.currentStreak}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>day streak 🔥</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                day streak <FontAwesome5 name="fire" size={12} color={Colors.primary} />
+              </Text>
             </View>
             <View style={[styles.statDivider, { backgroundColor: colors.surfaceVariant }]} />
             <View style={styles.statItem}>
               <Text style={[styles.statValue, { color: colors.textPrimary }]}>
                 {stats.longestStreak}
               </Text>
-              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>best ⚡</Text>
+              <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
+                best <FontAwesome5 name="bolt" size={12} color={Colors.warning} />
+              </Text>
             </View>
           </View>
         </View>

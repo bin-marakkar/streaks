@@ -11,6 +11,7 @@ import { Colors, Typography } from '../constants/theme';
 import { Text } from 'react-native';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { useTheme } from '../hooks/useTheme';
+import { FontAwesome5 } from '@expo/vector-icons';
 
 export type RootStackParamList = {
   Activities: undefined;
@@ -28,8 +29,8 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const Tab = createBottomTabNavigator<TabParamList>();
 
 const ICON_SIZE = 22;
-const TabIcon: React.FC<{ emoji: string; color: string }> = ({ emoji }) => (
-  <Text style={{ fontSize: ICON_SIZE }}>{emoji}</Text>
+const TabIcon: React.FC<{ name: string; color: string }> = ({ name, color }) => (
+  <FontAwesome5 name={name} size={ICON_SIZE} color={color} />
 );
 
 const ActivityTabNavigator = () => {
@@ -77,7 +78,7 @@ const ActivityTabNavigator = () => {
         options={{
           headerTitle: selectedActivity ? selectedActivity.name : 'Activity',
           tabBarLabel: 'Home',
-          tabBarIcon: ({ color }) => <TabIcon emoji="🏠" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="home" color={color} />,
         }}
       />
       <Tab.Screen
@@ -85,7 +86,7 @@ const ActivityTabNavigator = () => {
         component={CalendarScreen}
         options={{
           title: 'Calendar',
-          tabBarIcon: ({ color }) => <TabIcon emoji="📅" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="calendar-alt" color={color} />,
         }}
       />
       <Tab.Screen
@@ -93,7 +94,7 @@ const ActivityTabNavigator = () => {
         component={StatsScreen}
         options={{
           title: 'Stats',
-          tabBarIcon: ({ color }) => <TabIcon emoji="📊" color={color} />,
+          tabBarIcon: ({ color }) => <TabIcon name="chart-bar" color={color} />,
         }}
       />
     </Tab.Navigator>

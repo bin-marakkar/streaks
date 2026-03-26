@@ -48,7 +48,7 @@ export const rescheduleAllNotifications = async (
   // 2. Schedule Morning Reminder (Daily at 10:00 AM)
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Good Morning! ☀️',
+      title: 'Good Morning!',
       body: 'Time to check in on your streaks!',
       priority: Notifications.AndroidNotificationPriority.MAX,
     },
@@ -74,7 +74,7 @@ export const rescheduleAllNotifications = async (
       const names = unloggedToday.map(a => a.name).join(', ');
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Night Recap 🌙',
+          title: 'Night Recap',
           body: `Don't forget to log: ${names}`,
           priority: Notifications.AndroidNotificationPriority.MAX,
         },
@@ -86,7 +86,7 @@ export const rescheduleAllNotifications = async (
     } else {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Great Job! 🎉',
+          title: 'Great Job!',
           body: 'You logged all your activities today. Rest well!',
           priority: Notifications.AndroidNotificationPriority.MAX,
         },
@@ -105,7 +105,7 @@ export const rescheduleAllNotifications = async (
     const futureDate = dayjs().add(i, 'day').hour(21).minute(0).second(0).millisecond(0);
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Night Recap 🌙',
+        title: 'Night Recap',
         body: `Don't forget to log: ${allNames}`,
         priority: Notifications.AndroidNotificationPriority.MAX,
       },

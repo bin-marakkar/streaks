@@ -14,6 +14,7 @@ import {
 import { Text } from 'react-native-paper';
 import Animated, { FadeIn, SlideInDown, SlideOutDown, Easing } from 'react-native-reanimated';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 
 export interface ActivityFormModalProps {
@@ -109,7 +110,7 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
             />
             {name.length > 0 && (
               <TouchableOpacity onPress={() => setName('')} style={styles.clearBtn} hitSlop={8}>
-                <Text style={styles.clearBtnText}>✕</Text>
+                <FontAwesome5 name="times" size={14} color={Colors.textDisabled} />
               </TouchableOpacity>
             )}
           </View>

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { Colors, BorderRadius, Spacing, Typography } from '../constants/theme';
 
 interface LogButtonProps {
@@ -62,20 +63,25 @@ export const LogButton: React.FC<LogButtonProps> = ({
 
   return (
     <Animated.View style={animatedStyle}>
-      <Animated.View
+      <Pressable
         style={[
           styles.button,
           isLogged ? styles.buttonLogged : styles.buttonActive,
         ]}
-        // Use TouchableOpacity via onStartShouldSetResponder for the press
+        onPress={handlePress}
       >
         <Text
           style={[styles.buttonText, isLogged && styles.buttonTextLogged]}
-          onPress={handlePress}
         >
-          {isLogged ? '✅  Logged Today!' : isLoading ? 'Logging...' : '🔥  Log Today'}
+          {isLogged ? (
+            <><FontAwesome5 name="check-circle" size={20} />  Logged Today!</>
+          ) : isLoading ? (
+            'Logging...'
+          ) : (
+            <><FontAwesome5 name="fire" size={20} />  Log Today</>
+          )}
         </Text>
-      </Animated.View>
+      </Pressable>
     </Animated.View>
   );
 };

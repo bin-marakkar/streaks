@@ -15,6 +15,7 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import { ActivityCard } from '../components/ActivityCard';
 import { ActivityFormModal } from '../components/ActivityFormModal';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Activities'>;
@@ -113,7 +114,7 @@ export const ActivitiesScreen: React.FC = () => {
             style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
             activeOpacity={0.7}
           >
-            <Text style={styles.themeToggleEmoji}>⚙️</Text>
+            <FontAwesome5 name="cog" size={20} color={colors.textPrimary} />
           </TouchableOpacity>
         </Animated.View>
 
@@ -157,7 +158,7 @@ export const ActivitiesScreen: React.FC = () => {
           }}
           ListEmptyComponent={
             <Animated.View entering={FadeInDown.delay(100).springify()} style={styles.emptyContainer}>
-              <Text style={styles.emptyEmoji}>🌱</Text>
+              <FontAwesome5 name="seedling" size={48} color={colors.textSecondary} style={{ marginBottom: Spacing.md }} />
               <Text style={[styles.emptyText, { color: colors.textPrimary }]}>No habits yet</Text>
               <Text style={[styles.emptySubText, { color: colors.textSecondary }]}>
                 Tap the + button to add your first habit and start building your streak!

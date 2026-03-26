@@ -13,6 +13,7 @@ import Animated, {
   withSpring,
   FadeInDown,
 } from 'react-native-reanimated';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { LogButton } from '../components/LogButton';
 import { StreakBadge } from '../components/StreakBadge';
@@ -21,7 +22,7 @@ import { formatDisplayDate, todayStr } from '../utils/dateUtils';
 import { useTheme } from '../hooks/useTheme';
 
 export const DashboardScreen: React.FC = () => {
-  const { colors, isDark, toggleTheme } = useTheme();
+  const { colors, isDark } = useTheme();
   const { selectedActivityId, getActivityStats, logToday, isLoading } = useAttendanceStore();
   const stats = selectedActivityId
     ? getActivityStats(selectedActivityId)
@@ -59,19 +60,16 @@ export const DashboardScreen: React.FC = () => {
       <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={[styles.greeting, { color: colors.textPrimary }]}>
-            {isTodayLogged ? 'Great job! 🎉' : 'Ready to check in? 👋'}
+            {isTodayLogged ? (
+               <>Great job! <FontAwesome5 name="glass-cheers" size={24} color={Colors.primary} /></>
+            ) : (
+               <>Ready to check in? <FontAwesome5 name="hand-paper" size={24} color={Colors.primary} /></>
+            )}
           </Text>
           <Text style={[styles.date, { color: colors.textSecondary }]}>
             {formatDisplayDate(today)}
           </Text>
         </View>
-        <TouchableOpacity
-          onPress={toggleTheme}
-          style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.themeToggleEmoji}>{isDark ? '☀️' : '🌙'}</Text>
-        </TouchableOpacity>
       </Animated.View>
 
       {/* Status Card */}
@@ -80,7 +78,7 @@ export const DashboardScreen: React.FC = () => {
         style={[styles.statusCard, { backgroundColor: colors.surface }]}
       >
         <View style={[styles.statusIconWrap, { backgroundColor: colors.surfaceVariant }]}>
-          <Text style={styles.statusEmoji}>{isTodayLogged ? '✅' : '⏳'}</Text>
+          <FontAwesome5 name={isTodayLogged ? 'check-circle' : 'hourglass-half'} size={24} color={isTodayLogged ? Colors.success : Colors.warning} />
         </View>
         <View style={styles.statusText}>
           <Text style={[styles.statusTitle, { color: colors.textPrimary }]}>
@@ -99,7 +97,7 @@ export const DashboardScreen: React.FC = () => {
         <StreakBadge
           label="Current Streak"
           count={currentStreak}
-          emoji="🔥"
+          icon="fire"
           accent={Colors.primary}
           accentLight={colors.primaryContainer}
         />
@@ -107,7 +105,7 @@ export const DashboardScreen: React.FC = () => {
         <StreakBadge
           label="Longest Streak"
           count={longestStreak}
-          emoji="⚡"
+          icon="bolt"
           accent={Colors.warning}
           accentLight={isDark ? '#3A2B0A' : Colors.warningLight}
         />
@@ -126,12 +124,20 @@ export const DashboardScreen: React.FC = () => {
       <Animated.View entering={FadeInDown.delay(400).springify()}>
         <Text style={[styles.motivationText, { color: colors.textSecondary }]}>
           {currentStreak === 0
-            ? 'Start your streak today! Every journey begins with a single step. 💪'
+            ? (
+              <>Start your streak today! Every journey begins with a single step. <FontAwesome5 name="dumbbell" size={16} /></>
+            )
             : currentStreak < 7
-            ? `${currentStreak} day${currentStreak > 1 ? 's' : ''} strong! Keep it up! 💪`
+            ? (
+              <>{currentStreak} day{currentStreak > 1 ? 's' : ''} strong! Keep it up! <FontAwesome5 name="dumbbell" size={16} /></>
+            )
             : currentStreak < 30
-            ? `${currentStreak} days! You're on fire! 🔥`
-            : `${currentStreak} days! Absolutely legendary! 🏆`}
+            ? (
+              <>{currentStreak} days! You're on fire! <FontAwesome5 name="fire" size={16} /></>
+            )
+            : (
+              <>{currentStreak} days! Absolutely legendary! <FontAwesome5 name="trophy" size={16} /></>
+            )}
         </Text>
       </Animated.View>
     </ScrollView>
@@ -164,17 +170,6 @@ const styles = StyleSheet.create({
   },
   date: {
     ...Typography.bodyMedium,
-  },
-  themeToggle: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: Spacing.md,
-  },
-  themeToggleEmoji: {
-    fontSize: 20,
   },
   statusCard: {
     width: '100%',

@@ -4,6 +4,7 @@ import { Text } from 'react-native-paper';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
+import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
@@ -91,7 +92,7 @@ export const SettingsScreen: React.FC = () => {
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <Animated.View entering={FadeInDown.delay(0).springify()} style={[styles.section, { backgroundColor: colors.surface }]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Appearance</Text>
-        
+
         <View style={styles.settingRow}>
           <Text style={[styles.settingLabel, { color: colors.textSecondary }]}>Dark Mode</Text>
           <TouchableOpacity
@@ -99,14 +100,14 @@ export const SettingsScreen: React.FC = () => {
             style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
             activeOpacity={0.7}
           >
-            <Text style={styles.themeToggleEmoji}>{isDark ? '☀️' : '🌙'}</Text>
+            <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(50).springify()} style={[styles.section, { backgroundColor: colors.surface }]}>
         <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Data Management</Text>
-        
+
         <TouchableOpacity style={styles.actionButton} onPress={handleExport} disabled={isProcessing}>
           <Text style={styles.actionButtonText}>Export Data</Text>
         </TouchableOpacity>

@@ -2,12 +2,13 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 
 interface StreakBadgeProps {
   label: string;
   count: number;
-  emoji?: string;
+  icon?: string;
   accent?: string;
   accentLight?: string;
 }
@@ -15,7 +16,7 @@ interface StreakBadgeProps {
 export const StreakBadge: React.FC<StreakBadgeProps> = ({
   label,
   count,
-  emoji = '🔥',
+  icon = 'fire',
   accent = Colors.primary,
   accentLight = Colors.primaryContainer,
 }) => {
@@ -23,7 +24,7 @@ export const StreakBadge: React.FC<StreakBadgeProps> = ({
 
   return (
     <View style={[styles.card, { backgroundColor: accentLight }]}>
-      <Text style={styles.emoji}>{emoji}</Text>
+      <FontAwesome5 name={icon} size={28} color={accent} style={styles.icon} />
       <Text style={[styles.count, { color: accent }]}>{count}</Text>
       <Text style={[styles.label, { color: colors.textSecondary }]}>{label}</Text>
     </View>
@@ -39,8 +40,7 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.lg,
     paddingHorizontal: Spacing.md,
   },
-  emoji: {
-    fontSize: 28,
+  icon: {
     marginBottom: Spacing.xs,
   },
   count: {
