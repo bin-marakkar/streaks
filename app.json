@@ -30,7 +30,7 @@
       "package": "com.anonymous.streakcounter"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.ico"
     },
     "plugins": [
       [
