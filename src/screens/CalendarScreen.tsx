@@ -18,10 +18,11 @@ export const CalendarScreen: React.FC = () => {
   const [logModalDate, setLogModalDate] = React.useState('');
   const [logModalTime, setLogModalTime] = React.useState<string | null>(null);
 
-  const { logs, selectedActivityId } = useAttendanceStore();
+  const { logs, selectedActivityId, activities } = useAttendanceStore();
+  const selectedActivity = activities.find(a => a.id === selectedActivityId);
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const today = todayStr();
-  const markedDates = buildMarkedDates(loggedDates, today);
+  const markedDates = buildMarkedDates(loggedDates, today, selectedActivity?.createdAt);
 
   return (
     <ScrollView

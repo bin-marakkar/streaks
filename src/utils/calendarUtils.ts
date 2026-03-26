@@ -21,7 +21,8 @@ export type MarkedDates = {
  */
 export const buildMarkedDates = (
   loggedDates: string[],
-  today: string
+  today: string,
+  activityCreatedAt?: number
 ): MarkedDates => {
   const marked: MarkedDates = {};
   const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
@@ -43,14 +44,13 @@ export const buildMarkedDates = (
     };
   });
 
-  // Mark missed days (past days from 1st of current month to yesterday)
-  const firstOfMonth = dayjs(today).startOf('month');
-  const yesterday = dayjs(today).subtract(1, 'day');
-  let cursor = firstOfMonth;
+  // Mark missed days (from activity creation date up to yesterday)
+  const startOfPeriod = activityCreatedAt ? dayjs(activityCreatedAt) : dayjs(today).startOf('month');
+  let cursor = startOfPeriod.startOf('day');
 
-  while (cursor.isBefore(dayjs(today)) || cursor.isSame(dayjs(today).subtract(1, 'day'))) {
+  while (cursor.isBefore(dayjs(today), 'day')) {
     const dateStr = cursor.format('YYYY-MM-DD');
-    if (!loggedSet.has(dateStr) && dateStr < today) {
+    if (!loggedSet.has(dateStr)) {
       marked[dateStr] = {
         customStyles: {
           container: {
@@ -65,7 +65,6 @@ export const buildMarkedDates = (
       };
     }
     cursor = cursor.add(1, 'day');
-    if (cursor.isAfter(yesterday)) break;
   }
 
   // Today always gets a distinct orange treatment (overrides if already logged)
