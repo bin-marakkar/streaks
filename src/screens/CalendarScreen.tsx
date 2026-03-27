@@ -93,6 +93,7 @@ export const CalendarScreen: React.FC = () => {
         visible={logDetailsVisible}
         dateStr={logModalDate}
         timeStr={logModalTime}
+        activityName={selectedActivity?.name}
         onClose={() => setLogDetailsVisible(false)}
       />
     </ScrollView>

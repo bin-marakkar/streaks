@@ -1,14 +1,87 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
+  Switch,
+  Platform,
+} from 'react-native';
 import { Text } from 'react-native-paper';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as DocumentPicker from 'expo-document-picker';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+  delay?: number;
+  colors: any;
+}
+
+const Section: React.FC<SectionProps> = ({ title, children, delay = 0, colors }) => (
+  <Animated.View entering={FadeInDown.delay(delay).springify()} style={[styles.section, { backgroundColor: colors.surface }]}>
+    <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>{title}</Text>
+    {children}
+  </Animated.View>
+);
+
+interface RowProps {
+  icon: string;
+  iconLib?: 'ionicons' | 'fa5';
+  label: string;
+  sublabel?: string;
+  colors: any;
+  right?: React.ReactNode;
+  onPress?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
+  danger?: boolean;
+}
+
+const Row: React.FC<RowProps> = ({
+  icon, iconLib = 'ionicons', label, sublabel, colors, right, onPress, isFirst, isLast, danger,
+}) => {
+  const IconComp = iconLib === 'fa5' ? FontAwesome5 : Ionicons;
+  const labelColor = danger ? Colors.error : colors.textPrimary;
+  const iconColor = danger ? Colors.error : Colors.primary;
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={onPress ? 0.65 : 1}
+      style={[
+        styles.row,
+        isFirst && styles.rowFirst,
+        isLast && styles.rowLast,
+        { borderBottomColor: colors.surfaceVariant },
+        isLast && { borderBottomWidth: 0 },
+      ]}
+    >
+      <View style={[styles.rowIconWrap, { backgroundColor: danger ? Colors.errorLight : colors.primaryContainer ?? Colors.primaryContainer }]}>
+        <IconComp name={icon as any} size={16} color={iconColor} />
+      </View>
+      <View style={styles.rowTextWrap}>
+        <Text style={[styles.rowLabel, { color: labelColor }]}>{label}</Text>
+        {sublabel ? <Text style={[styles.rowSublabel, { color: colors.textSecondary }]}>{sublabel}</Text> : null}
+      </View>
+      {right ?? (onPress && !right ? (
+        <Ionicons name="chevron-forward" size={16} color={colors.textSecondary} />
+      ) : null)}
+    </TouchableOpacity>
+  );
+};
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export const SettingsScreen: React.FC = () => {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -23,7 +96,6 @@ export const SettingsScreen: React.FC = () => {
       await FileSystem.writeAsStringAsync(fileUri, dataStr, {
         encoding: FileSystem.EncodingType.UTF8,
       });
-
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
         await Sharing.shareAsync(fileUri, {
@@ -33,7 +105,7 @@ export const SettingsScreen: React.FC = () => {
       } else {
         Alert.alert('Error', 'Sharing is not available on this device');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Export Failed', 'An error occurred while exporting data.');
     } finally {
       setIsProcessing(false);
@@ -46,14 +118,13 @@ export const SettingsScreen: React.FC = () => {
       const fileContent = await FileSystem.readAsStringAsync(fileUri, {
         encoding: FileSystem.EncodingType.UTF8,
       });
-
       const success = await importData(fileContent);
       if (success) {
         Alert.alert('Success', 'Data imported successfully!');
       } else {
         Alert.alert('Invalid Data', 'The selected file does not contain valid application data.');
       }
-    } catch (error) {
+    } catch {
       Alert.alert('Import Failed', 'Failed to read or process the file.');
     } finally {
       setIsProcessing(false);
@@ -66,14 +137,12 @@ export const SettingsScreen: React.FC = () => {
         type: ['application/json', 'text/plain'],
         copyToCacheDirectory: true,
       });
-
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const fileUri = result.assets[0].uri;
-
         if (activities.length > 0) {
           Alert.alert(
-            'Warning',
-            'Importing data will overwrite all your current habits and logs. Are you sure you want to proceed?',
+            'Overwrite Data?',
+            'Importing will replace all current habits and logs. Continue?',
             [
               { text: 'Cancel', style: 'cancel' },
               { text: 'Import', style: 'destructive', onPress: () => processImport(fileUri) },
@@ -83,43 +152,93 @@ export const SettingsScreen: React.FC = () => {
           await processImport(fileUri);
         }
       }
-    } catch (err) {
+    } catch {
       Alert.alert('Import Error', 'Could not open document picker.');
     }
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <Animated.View entering={FadeInDown.delay(0).springify()} style={[styles.section, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Appearance</Text>
+    <View style={[styles.screenWrapper, { backgroundColor: colors.background }]}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Page header */}
+        <Animated.View entering={FadeInDown.delay(0).springify()} style={styles.pageHeader}>
+          <Text style={[styles.pageTitle, { color: colors.textPrimary }]}>Settings</Text>
+          <Text style={[styles.pageSubtitle, { color: colors.textSecondary }]}>
+            Customize your experience
+          </Text>
+        </Animated.View>
 
-        <View style={styles.settingRow}>
-          <Text style={[styles.settingLabel, { color: colors.textSecondary }]}>Dark Mode</Text>
-          <TouchableOpacity
-            onPress={toggleTheme}
-            style={[styles.themeToggle, { backgroundColor: colors.surfaceVariant }]}
-            activeOpacity={0.7}
-          >
-            <Ionicons name={isDark ? 'sunny' : 'moon'} size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-        </View>
-      </Animated.View>
+        {/* Appearance */}
+        <Section title="APPEARANCE" delay={60} colors={colors}>
+          <Row
+            icon={isDark ? 'sunny' : 'moon'}
+            label="Dark Mode"
+            sublabel={isDark ? 'Currently using dark theme' : 'Currently using light theme'}
+            colors={colors}
+            isFirst
+            isLast
+            right={
+              <Switch
+                value={isDark}
+                onValueChange={toggleTheme}
+                trackColor={{ false: colors.surfaceVariant, true: Colors.primary + 'AA' }}
+                thumbColor={isDark ? Colors.primary : colors.textSecondary}
+                ios_backgroundColor={colors.surfaceVariant}
+              />
+            }
+          />
+        </Section>
 
-      <Animated.View entering={FadeInDown.delay(50).springify()} style={[styles.section, { backgroundColor: colors.surface }]}>
-        <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Data Management</Text>
+        {/* Data Management */}
+        <Section title="DATA MANAGEMENT" delay={120} colors={colors}>
+          <Row
+            icon="cloud-upload-outline"
+            label="Export Data"
+            sublabel="Share a backup of your habits & logs"
+            colors={colors}
+            onPress={isProcessing ? undefined : handleExport}
+            isFirst
+          />
+          <Row
+            icon="cloud-download-outline"
+            label="Import Data"
+            sublabel="Restore from a backup file"
+            colors={colors}
+            onPress={isProcessing ? undefined : handleImport}
+            isLast
+          />
+        </Section>
 
-        <TouchableOpacity style={styles.actionButton} onPress={handleExport} disabled={isProcessing}>
-          <Text style={styles.actionButtonText}>Export Data</Text>
-        </TouchableOpacity>
+        {/* About */}
+        <Section title="ABOUT" delay={180} colors={colors}>
+          <Row
+            icon="flame"
+            iconLib="ionicons"
+            label="Streak Counter"
+            sublabel="Version 1.0.0"
+            colors={colors}
+            isFirst
+          />
+          <Row
+            icon="heart-outline"
+            label="Made with love"
+            sublabel="Track your habits & build consistency"
+            colors={colors}
+            isLast
+          />
+        </Section>
+      </ScrollView>
 
-        <TouchableOpacity style={[styles.actionButton, styles.importButton]} onPress={handleImport} disabled={isProcessing}>
-          <Text style={[styles.actionButtonText, styles.importButtonText]}>Import Data</Text>
-        </TouchableOpacity>
-      </Animated.View>
-
+      {/* Loading overlay */}
       {isProcessing && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <View style={[styles.loadingCard, { backgroundColor: colors.surface }]}>
+            <ActivityIndicator size="large" color={Colors.primary} />
+            <Text style={[styles.loadingText, { color: colors.textPrimary }]}>Processing…</Text>
+          </View>
         </View>
       )}
     </View>
@@ -127,68 +246,97 @@ export const SettingsScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  screenWrapper: {
     flex: 1,
-    padding: Spacing.lg,
   },
+  scrollContent: {
+    paddingHorizontal: Spacing.lg,
+    paddingTop: Spacing.xl,
+    paddingBottom: Spacing.xxl,
+  },
+  pageHeader: {
+    marginBottom: Spacing.xl,
+  },
+  pageTitle: {
+    fontSize: 30,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  pageSubtitle: {
+    ...Typography.bodyMedium,
+    marginTop: Spacing.xs,
+  },
+  // Section
   section: {
-    borderRadius: BorderRadius.lg,
-    padding: Spacing.lg,
+    borderRadius: BorderRadius.xl,
     marginBottom: Spacing.lg,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOpacity: 0.06,
+    shadowRadius: 10,
+    elevation: 3,
   },
   sectionTitle: {
-    ...Typography.titleLarge,
-    marginBottom: Spacing.md,
+    ...Typography.labelMedium,
+    letterSpacing: 1,
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.md,
+    paddingBottom: Spacing.xs,
   },
-  settingRow: {
+  // Row
+  row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: Spacing.sm,
-  },
-  settingLabel: {
-    ...Typography.bodyLarge,
-  },
-  themeToggle: {
-    width: 44,
-    height: 44,
-    borderRadius: BorderRadius.full,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  themeToggleEmoji: {
-    fontSize: 20,
-  },
-  actionButton: {
-    backgroundColor: Colors.primary,
+    paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  rowFirst: {
+    // no extra needed; borderBottom separates from next row
+  },
+  rowLast: {
+    borderBottomWidth: 0,
+  },
+  rowIconWrap: {
+    width: 34,
+    height: 34,
     borderRadius: BorderRadius.md,
     alignItems: 'center',
-    marginBottom: Spacing.md,
+    justifyContent: 'center',
+    marginRight: Spacing.md,
   },
-  actionButtonText: {
-    color: '#FFFFFF',
-    ...Typography.labelLarge,
+  rowTextWrap: {
+    flex: 1,
+  },
+  rowLabel: {
+    ...Typography.bodyLarge,
     fontWeight: '600',
   },
-  importButton: {
-    backgroundColor: 'transparent',
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    marginBottom: 0,
+  rowSublabel: {
+    ...Typography.bodySmall,
+    marginTop: 2,
   },
-  importButtonText: {
-    color: Colors.primary,
-  },
+  // Loading
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingCard: {
+    padding: Spacing.xl,
+    borderRadius: BorderRadius.xl,
+    alignItems: 'center',
+    gap: Spacing.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 12,
+  },
+  loadingText: {
+    ...Typography.bodyMedium,
+    fontWeight: '600',
   },
 });
