@@ -9,7 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Text } from 'react-native-paper';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Colors, BorderRadius, Spacing, Typography } from '../constants/theme';
+import { Colors, BorderRadius, Spacing, Typography } from '../constants';
 
 interface LogButtonProps {
   onPress: () => void;

@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useColorScheme } from 'react-native';
-import { Colors, lightPaperTheme, darkPaperTheme } from '../constants/theme';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Colors, lightPaperTheme, darkPaperTheme, StorageKeys } from '../constants';
 
 type ThemeMode = 'light' | 'dark';
 
@@ -26,9 +27,24 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const systemScheme = useColorScheme();
   const [mode, setMode] = useState<ThemeMode>(systemScheme === 'dark' ? 'dark' : 'light');
 
+  // Load persisted theme on mount
+  useEffect(() => {
+    AsyncStorage.getItem(StorageKeys.THEME).then(saved => {
+      if (saved === 'light' || saved === 'dark') {
+        setMode(saved);
+      }
+    });
+  }, []);
+
   const isDark = mode === 'dark';
 
-  const toggleTheme = () => setMode(prev => (prev === 'light' ? 'dark' : 'light'));
+  const toggleTheme = () => {
+    setMode(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      AsyncStorage.setItem(StorageKeys.THEME, next);
+      return next;
+    });
+  };
 
   const resolvedColors = {
     ...Colors,

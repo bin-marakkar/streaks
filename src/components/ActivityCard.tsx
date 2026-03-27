@@ -3,7 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Text, IconButton } from 'react-native-paper';
 import Animated, { FadeInDown, FadeInRight, FadeOutRight } from 'react-native-reanimated';
 import { FontAwesome5 } from '@expo/vector-icons';
-import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants';
 import { useTheme } from '../hooks/useTheme';
 
 export interface ActivityStats {

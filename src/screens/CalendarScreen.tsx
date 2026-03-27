@@ -7,7 +7,7 @@ import { buildMarkedDates } from '../utils/calendarUtils';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { CalendarLegend } from '../components/CalendarLegend';
 import { LogDetailsModal } from '../components/LogDetailsModal';
-import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants';
 import { useTheme } from '../hooks/useTheme';
 import { todayStr } from '../utils/dateUtils';
 import dayjs from 'dayjs';

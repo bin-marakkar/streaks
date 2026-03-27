@@ -7,7 +7,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { StreakBadge } from '../components/StreakBadge';
 import { MonthlyProgress } from '../components/MonthlyProgress';
-import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants';
 import { useTheme } from '../hooks/useTheme';
 import {
   loggedDaysThisMonth,

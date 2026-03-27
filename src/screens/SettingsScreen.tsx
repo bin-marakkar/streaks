@@ -16,7 +16,7 @@ import * as DocumentPicker from 'expo-document-picker';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 import { useAttendanceStore } from '../store/attendanceStore';
-import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 
 // ─── Sub-components ──────────────────────────────────────────────────────────

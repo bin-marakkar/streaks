@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import Animated, { FadeIn, SlideInDown, SlideOutDown, Easing } from 'react-native-reanimated';
-import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
 

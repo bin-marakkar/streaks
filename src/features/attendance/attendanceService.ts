@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import dayjs from 'dayjs';
 import { todayStr } from '../../utils/dateUtils';
+import { StorageKeys } from '../../constants';
 
 export interface Activity {
   id: string;
@@ -8,8 +9,7 @@ export interface Activity {
   createdAt: number;
 }
 
-const ACTIVITIES_KEY = 'streak_activities';
-const LOGS_KEY = 'streak_logs';
+
 
 /**
  * Attendance Service
@@ -18,7 +18,7 @@ const LOGS_KEY = 'streak_logs';
 export const attendanceService = {
   getActivities: async (): Promise<Activity[]> => {
     try {
-      const raw = await AsyncStorage.getItem(ACTIVITIES_KEY);
+      const raw = await AsyncStorage.getItem(StorageKeys.ACTIVITIES);
       if (!raw) return [];
       return JSON.parse(raw) as Activity[];
     } catch {
@@ -27,7 +27,7 @@ export const attendanceService = {
   },
 
   saveActivities: async (activities: Activity[]): Promise<void> => {
-    await AsyncStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities));
+    await AsyncStorage.setItem(StorageKeys.ACTIVITIES, JSON.stringify(activities));
   },
 
   updateActivity: async (id: string, newName: string): Promise<void> => {
@@ -38,7 +38,7 @@ export const attendanceService = {
 
   getLogs: async (): Promise<Record<string, string[]>> => {
     try {
-      const raw = await AsyncStorage.getItem(LOGS_KEY);
+      const raw = await AsyncStorage.getItem(StorageKeys.LOGS);
       if (!raw) return {};
       return JSON.parse(raw) as Record<string, string[]>;
     } catch {
@@ -47,7 +47,7 @@ export const attendanceService = {
   },
 
   saveLogs: async (logs: Record<string, string[]>): Promise<void> => {
-    await AsyncStorage.setItem(LOGS_KEY, JSON.stringify(logs));
+    await AsyncStorage.setItem(StorageKeys.LOGS, JSON.stringify(logs));
   },
 
   logToday: async (activityId: string): Promise<boolean> => {
@@ -65,8 +65,8 @@ export const attendanceService = {
   },
 
   clearAll: async (): Promise<void> => {
-    await AsyncStorage.removeItem(ACTIVITIES_KEY);
-    await AsyncStorage.removeItem(LOGS_KEY);
+    await AsyncStorage.removeItem(StorageKeys.ACTIVITIES);
+    await AsyncStorage.removeItem(StorageKeys.LOGS);
   },
 
   exportData: async (): Promise<string> => {

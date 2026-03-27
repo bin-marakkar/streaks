@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { Colors, BorderRadius } from '../constants/theme';
+import { Colors, BorderRadius } from '../constants';
 
 export type MarkedDates = {
   [date: string]: {

@@ -12,7 +12,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useAttendanceStore } from '../store/attendanceStore';
-import { Colors, Typography, Spacing, BorderRadius } from '../constants/theme';
+import { Colors, Typography, Spacing, BorderRadius } from '../constants';
 import { ActivityCard } from '../components/ActivityCard';
 import { ActivityFormModal } from '../components/ActivityFormModal';
 import { FontAwesome5 } from '@expo/vector-icons';

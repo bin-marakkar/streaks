@@ -7,7 +7,7 @@ import { CalendarScreen } from '../screens/CalendarScreen';
 import { StatsScreen } from '../screens/StatsScreen';
 import { ActivitiesScreen } from '../screens/ActivitiesScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
-import { Colors, Typography } from '../constants/theme';
+import { Colors, Typography } from '../constants';
 import { Text } from 'react-native';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { useTheme } from '../hooks/useTheme';

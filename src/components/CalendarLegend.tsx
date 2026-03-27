@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Colors, Spacing, Typography } from '../constants/theme';
+import { Colors, Spacing, Typography } from '../constants';
 import { useTheme } from '../hooks/useTheme';
 
 /**

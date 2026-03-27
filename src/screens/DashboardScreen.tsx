@@ -17,7 +17,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { LogButton } from '../components/LogButton';
 import { StreakBadge } from '../components/StreakBadge';
-import { Colors, Spacing, Typography, BorderRadius } from '../constants/theme';
+import { Colors, Spacing, Typography, BorderRadius } from '../constants';
 import { formatDisplayDate, todayStr } from '../utils/dateUtils';
 import { useTheme } from '../hooks/useTheme';
 
