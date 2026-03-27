@@ -25,7 +25,7 @@ export const buildMarkedDates = (
   activityCreatedAt?: number
 ): MarkedDates => {
   const marked: MarkedDates = {};
-  const sanitizedDates = loggedDates.map(d => d.substring(0, 10));
+  const sanitizedDates = loggedDates.map(d => dayjs(d).format('YYYY-MM-DD'));
   const loggedSet = new Set(sanitizedDates);
 
   // Mark all logged dates

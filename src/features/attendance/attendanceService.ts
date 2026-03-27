@@ -55,7 +55,7 @@ export const attendanceService = {
     const today = todayStr();
 
     const activityLogs = logs[activityId] || [];
-    if (activityLogs.some(log => log.startsWith(today))) {
+    if (activityLogs.some(log => dayjs(log).format('YYYY-MM-DD') === today)) {
       return false; // already logged today
     }
 

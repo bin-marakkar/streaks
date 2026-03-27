@@ -91,8 +91,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     const { logs } = get();
     const today = todayStr();
     const activityLogs = logs[activityId] || [];
-
-    if (activityLogs.some(log => log.startsWith(today))) return; // Guard: already logged today
+    if (activityLogs.some(log => dayjs(log).format('YYYY-MM-DD') === today)) return; // Guard: already logged today
 
     set({ isLoading: true });
     await attendanceService.logToday(activityId);
@@ -131,7 +130,7 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
     return {
       currentStreak: calculateCurrentStreak(logs),
       longestStreak: calculateLongestStreak(logs),
-      isTodayLogged: logs.some(log => log.startsWith(todayStr())),
+      isTodayLogged: logs.some(log => dayjs(log).format('YYYY-MM-DD') === todayStr()),
     };
   },
 }));
