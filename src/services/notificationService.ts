@@ -1,9 +1,7 @@
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import dayjs from 'dayjs';
 import { Activity } from '../features/attendance/attendanceService';
-import { todayStr } from '../utils/dateUtils';
 
 // Configure how notifications appear when the app is in the foreground
 Notifications.setNotificationHandler({
@@ -45,10 +43,10 @@ export const rescheduleAllNotifications = async (
   // 1. Cancel all existing notifications
   await Notifications.cancelAllScheduledNotificationsAsync();
 
-  // 2. Schedule Morning Reminder (Daily at 10:00 AM)
+  // 2. Schedule Morning Reminder — repeating daily at 10:00 AM local time
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Good Morning!',
+      title: 'Good Morning! 🌅',
       body: 'Time to check in on your streaks!',
       priority: Notifications.AndroidNotificationPriority.MAX,
     },
@@ -59,59 +57,81 @@ export const rescheduleAllNotifications = async (
     },
   });
 
-  // 3. Schedule Night Recap
   if (activities.length === 0) return;
 
-  const today = todayStr();
-  const unloggedToday = activities.filter(a => !(logs[a.id] || []).includes(today));
+  // Helper: convert any log entry (ISO string or plain YYYY-MM-DD) to a local date string.
+  // Uses plain Date so there's no dayjs dependency and no UTC-offset confusion.
+  const toLocalDate = (log: string): string => {
+    const d = new Date(log);
+    if (isNaN(d.getTime())) return log.slice(0, 10); // fallback for plain date strings
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
-  const now = dayjs();
-  const todayRecapTime = dayjs().hour(21).minute(0).second(0).millisecond(0);
-  
-  // If it's before 9 PM today, schedule today's precise recap
-  if (now.isBefore(todayRecapTime)) {
+  const now = new Date();
+  const todayLocal = toLocalDate(now.toISOString());
+
+  // 3. Tonight's evening notification — DYNAMIC content.
+  //    Because this function is called reactively (useNotifications hook) every time the
+  //    user logs an activity, tonight's one-shot DATE trigger is refreshed with the
+  //    latest state each time, so it always shows only the remaining unlogged activities.
+  const todayAt9PM = new Date(now);
+  todayAt9PM.setHours(21, 0, 0, 0);
+
+  if (now < todayAt9PM) {
+    const unloggedToday = activities.filter(a => {
+      const activityLogs = logs[a.id] || [];
+      return !activityLogs.some(log => toLocalDate(log) === todayLocal);
+    });
+
     if (unloggedToday.length > 0) {
       const names = unloggedToday.map(a => a.name).join(', ');
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Night Recap',
+          title: 'Evening Check-in 🌙',
           body: `Don't forget to log: ${names}`,
           priority: Notifications.AndroidNotificationPriority.MAX,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: todayRecapTime.toDate(),
+          date: todayAt9PM,
         },
       });
     } else {
+      // All done today — send a congratulatory message instead
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: 'Great Job!',
-          body: 'You logged all your activities today. Rest well!',
+          title: 'Great job today! 🎉',
+          body: 'All activities logged. Keep the streak going!',
           priority: Notifications.AndroidNotificationPriority.MAX,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
-          date: todayRecapTime.toDate(),
+          date: todayAt9PM,
         },
       });
     }
   }
 
-  // 4. Pre-schedule next 7 days of night recaps
-  // Assumes nothing will be logged yet on future days.
+  // 4. Future days (1–7): schedule with all activity names as a conservative fallback.
+  //    When the app is opened on any of those days, this function re-runs and replaces
+  //    that day's entry (step 3 above) with accurate, unlogged-only content.
   const allNames = activities.map(a => a.name).join(', ');
   for (let i = 1; i <= 7; i++) {
-    const futureDate = dayjs().add(i, 'day').hour(21).minute(0).second(0).millisecond(0);
+    const futureAt9PM = new Date(now);
+    futureAt9PM.setDate(futureAt9PM.getDate() + i);
+    futureAt9PM.setHours(21, 0, 0, 0);
     await Notifications.scheduleNotificationAsync({
       content: {
-        title: 'Night Recap',
+        title: 'Evening Check-in 🌙',
         body: `Don't forget to log: ${allNames}`,
         priority: Notifications.AndroidNotificationPriority.MAX,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: futureDate.toDate(),
+        date: futureAt9PM,
       },
     });
   }

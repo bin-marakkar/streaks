@@ -50,7 +50,12 @@ export const CalendarScreen: React.FC = () => {
           maxDate={today}
           enableSwipeMonths={true}
           onDayLongPress={(day) => {
-            const rawLog = loggedDates.find(log => log.startsWith(day.dateString));
+            // Use dayjs to convert each log to a local-timezone date string before comparing.
+            // This handles UTC ISO strings (e.g. "2026-03-27T18:45:00.639Z") which may fall
+            // on a different calendar day once converted to the user's local timezone (IST).
+            const rawLog = loggedDates.find(
+              log => dayjs(log).format('YYYY-MM-DD') === day.dateString
+            );
             if (rawLog) {
               const containsTime = rawLog.includes('T');
               if (containsTime) {

@@ -218,7 +218,7 @@ export const SettingsScreen: React.FC = () => {
             icon="flame"
             iconLib="ionicons"
             label="Streak Counter"
-            sublabel="Version 1.0.0"
+            sublabel="Version 1.0.1"
             colors={colors}
             isFirst
           />
