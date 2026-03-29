@@ -38,7 +38,7 @@ Ensure you have the following installed:
 
 1. Clone the repository (if applicable) or navigate to the project directory:
    ```bash
-   cd streak-counter
+   cd streaks
    ```
 
 2. Install the necessary dependencies:
