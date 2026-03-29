@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Constants from 'expo-constants';
 import {
   View,
   StyleSheet,
@@ -218,7 +219,7 @@ export const SettingsScreen: React.FC = () => {
             icon="flame"
             iconLib="ionicons"
             label="Streak Counter"
-            sublabel="Version 1.0.1"
+            sublabel={`Version ${Constants.expoConfig?.version ?? '—'}`}
             colors={colors}
             isFirst
           />

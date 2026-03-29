@@ -1,20 +1,31 @@
+const { version } = require('./package.json');
+
 module.exports = ({ config }) => {
   const IS_DEV = process.env.APP_VARIANT === 'development';
 
+  const base = {
+    ...config,
+    // Single source of truth: version is always read from package.json.
+    // Run `npm version patch|minor|major` to bump — app.json never needs editing.
+    version,
+  };
+
   if (IS_DEV) {
     return {
-      ...config,
-      name: `${config.name} (Dev)`,
+      ...base,
+      name: `${base.name} (Dev)`,
       ios: {
-        ...config.ios,
-        bundleIdentifier: config.ios?.bundleIdentifier ? `${config.ios.bundleIdentifier}.dev` : undefined,
+        ...base.ios,
+        bundleIdentifier: base.ios?.bundleIdentifier
+          ? `${base.ios.bundleIdentifier}.dev`
+          : undefined,
       },
       android: {
-        ...config.android,
-        package: config.android?.package ? `${config.android.package}.dev` : undefined,
+        ...base.android,
+        package: base.android?.package ? `${base.android.package}.dev` : undefined,
       },
     };
   }
 
-  return config;
+  return base;
 };
