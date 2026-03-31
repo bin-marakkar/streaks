@@ -49,11 +49,13 @@ export const rescheduleAllNotifications = async (
       title: 'Good Morning! 🌅',
       body: 'Time to check in on your streaks!',
       priority: Notifications.AndroidNotificationPriority.MAX,
+      sound: true,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DAILY,
       hour: 10,
       minute: 0,
+      channelId: 'default',
     },
   });
 
@@ -93,10 +95,12 @@ export const rescheduleAllNotifications = async (
           title: 'Evening Check-in 🌙',
           body: `Don't forget to log: ${names}`,
           priority: Notifications.AndroidNotificationPriority.MAX,
+          sound: true,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: todayAt9PM,
+          channelId: 'default',
         },
       });
     } else {
@@ -106,10 +110,12 @@ export const rescheduleAllNotifications = async (
           title: 'Great job today! 🎉',
           body: 'All activities logged. Keep the streak going!',
           priority: Notifications.AndroidNotificationPriority.MAX,
+          sound: true,
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: todayAt9PM,
+          channelId: 'default',
         },
       });
     }
@@ -128,10 +134,12 @@ export const rescheduleAllNotifications = async (
         title: 'Evening Check-in 🌙',
         body: `Don't forget to log: ${allNames}`,
         priority: Notifications.AndroidNotificationPriority.MAX,
+        sound: true,
       },
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DATE,
         date: futureAt9PM,
+        channelId: 'default',
       },
     });
   }
