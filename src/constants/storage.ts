@@ -5,4 +5,5 @@ export const StorageKeys = {
   LOGS:       'streak_logs',
   NOTES:      'streak_notes',
   THEME:      '@streak_counter_theme',
+  CONFETTI:   '@streak_counter_confetti',
 } as const;

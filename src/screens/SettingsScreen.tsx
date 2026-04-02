@@ -86,7 +86,7 @@ const Row: React.FC<RowProps> = ({
 
 export const SettingsScreen: React.FC = () => {
   const { colors, isDark, toggleTheme } = useTheme();
-  const { exportData, importData, activities } = useAttendanceStore();
+  const { exportData, importData, activities, isConfettiEnabled, setConfettiEnabled } = useAttendanceStore();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleExport = async () => {
@@ -180,13 +180,29 @@ export const SettingsScreen: React.FC = () => {
             sublabel={isDark ? 'Currently using dark theme' : 'Currently using light theme'}
             colors={colors}
             isFirst
-            isLast
             right={
               <Switch
                 value={isDark}
                 onValueChange={toggleTheme}
                 trackColor={{ false: colors.surfaceVariant, true: Colors.primary + 'AA' }}
                 thumbColor={isDark ? Colors.primary : colors.textSecondary}
+                ios_backgroundColor={colors.surfaceVariant}
+              />
+            }
+          />
+          <Row
+            icon="sparkles"
+            iconLib="ionicons"
+            label="Confetti Effect"
+            sublabel="Show confetti when logging a habit"
+            colors={colors}
+            isLast
+            right={
+              <Switch
+                value={isConfettiEnabled}
+                onValueChange={setConfettiEnabled}
+                trackColor={{ false: colors.surfaceVariant, true: Colors.primary + 'AA' }}
+                thumbColor={isConfettiEnabled ? Colors.primary : colors.textSecondary}
                 ios_backgroundColor={colors.surfaceVariant}
               />
             }

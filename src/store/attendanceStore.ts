@@ -16,6 +16,7 @@ interface AttendanceState {
   notes: NotesMap;
   selectedActivityId: string | null;
   isLoading: boolean;
+  isConfettiEnabled: boolean;
 
   // Actions
   hydrate: () => Promise<void>;
@@ -23,6 +24,7 @@ interface AttendanceState {
   editActivity: (id: string, name: string, requiresNote?: boolean) => Promise<void>;
   deleteActivity: (id: string) => Promise<void>;
   selectActivity: (id: string) => void;
+  setConfettiEnabled: (enabled: boolean) => Promise<void>;
   logToday: (activityId: string, note?: string) => Promise<void>;
   resetActivityData: (id: string) => Promise<void>;
   exportData: () => Promise<string>;
@@ -39,13 +41,24 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
   notes: {},
   selectedActivityId: null,
   isLoading: false,
+  isConfettiEnabled: true,
 
   hydrate: async () => {
     set({ isLoading: true });
     const activities = await attendanceService.getActivities();
     const logs = await attendanceService.getLogs();
     const notes = await attendanceService.getNotes();
-    set({ activities, logs, notes, isLoading: false });
+    
+    // Load confetti setting (default to true)
+    try {
+      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+      const { StorageKeys } = await import('../constants/storage');
+      const confettiStr = await AsyncStorage.getItem(StorageKeys.CONFETTI);
+      const isConfettiEnabled = confettiStr ? JSON.parse(confettiStr) : true;
+      set({ activities, logs, notes, isConfettiEnabled, isLoading: false });
+    } catch {
+      set({ activities, logs, notes, isConfettiEnabled: true, isLoading: false });
+    }
   },
 
   createActivity: async (name: string, requiresNote?: boolean) => {
@@ -100,6 +113,15 @@ export const useAttendanceStore = create<AttendanceState>((set, get) => ({
 
   selectActivity: (id: string) => {
     set({ selectedActivityId: id });
+  },
+
+  setConfettiEnabled: async (enabled: boolean) => {
+    try {
+      const { default: AsyncStorage } = await import('@react-native-async-storage/async-storage');
+      const { StorageKeys } = await import('../constants/storage');
+      await AsyncStorage.setItem(StorageKeys.CONFETTI, JSON.stringify(enabled));
+    } catch {}
+    set({ isConfettiEnabled: enabled });
   },
 
   logToday: async (activityId: string, note?: string) => {

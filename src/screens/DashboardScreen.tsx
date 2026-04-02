@@ -21,10 +21,11 @@ import { NoteInputModal } from '../components/NoteInputModal';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants';
 import { formatDisplayDate, todayStr } from '../utils/dateUtils';
 import { useTheme } from '../hooks/useTheme';
+import ConfettiCannon from 'react-native-confetti-cannon';
 
 export const DashboardScreen: React.FC = () => {
   const { colors, isDark } = useTheme();
-  const { selectedActivityId, activities, getActivityStats, logToday, isLoading } = useAttendanceStore();
+  const { selectedActivityId, activities, getActivityStats, logToday, isLoading, isConfettiEnabled } = useAttendanceStore();
   const selectedActivity = activities.find(a => a.id === selectedActivityId);
   const stats = selectedActivityId
     ? getActivityStats(selectedActivityId)
@@ -32,6 +33,13 @@ export const DashboardScreen: React.FC = () => {
   const { isTodayLogged, currentStreak, longestStreak } = stats;
 
   const [noteModalVisible, setNoteModalVisible] = React.useState(false);
+  const confettiRef = React.useRef<any>(null);
+
+  const triggerConfetti = () => {
+    if (isConfettiEnabled && confettiRef.current) {
+      confettiRef.current.start();
+    }
+  };
 
   const handleLogToday = () => {
     if (!selectedActivityId) return;
@@ -39,6 +47,7 @@ export const DashboardScreen: React.FC = () => {
       setNoteModalVisible(true);
     } else {
       logToday(selectedActivityId);
+      triggerConfetti();
     }
   };
 
@@ -46,6 +55,7 @@ export const DashboardScreen: React.FC = () => {
     if (!selectedActivityId) return;
     setNoteModalVisible(false);
     logToday(selectedActivityId, note);
+    triggerConfetti();
   };
 
   const headerScale = useSharedValue(0.9);
@@ -61,6 +71,7 @@ export const DashboardScreen: React.FC = () => {
   const today = todayStr();
 
   return (
+    <View style={{ flex: 1 }}>
     <ScrollView
       style={[styles.scrollView, { backgroundColor: colors.background }]}
       contentContainerStyle={styles.content}
@@ -163,6 +174,14 @@ export const DashboardScreen: React.FC = () => {
         onSubmit={handleNoteSubmit}
       />
     </ScrollView>
+    <ConfettiCannon
+      count={150}
+      origin={{ x: -10, y: 0 }}
+      autoStart={false}
+      ref={confettiRef}
+      fadeOut={true}
+    />
+    </View>
   );
 };
 
