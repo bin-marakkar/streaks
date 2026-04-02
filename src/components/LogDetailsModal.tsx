@@ -16,6 +16,7 @@ export interface LogDetailsModalProps {
   visible: boolean;
   dateStr: string;
   timeStr: string | null;
+  note?: string;
   activityName?: string;
   onClose: () => void;
 }
@@ -24,6 +25,7 @@ export const LogDetailsModal: React.FC<LogDetailsModalProps> = ({
   visible,
   dateStr,
   timeStr,
+  note,
   activityName,
   onClose,
 }) => {
@@ -112,6 +114,22 @@ export const LogDetailsModal: React.FC<LogDetailsModalProps> = ({
                 </View>
               ) : null}
             </View>
+
+            {/* Note row */}
+            {note ? (
+              <>
+                <View style={[styles.divider, { backgroundColor: colors.surfaceVariant }]} />
+                <View style={styles.infoRow}>
+                  <View style={[styles.infoIconWrap, { backgroundColor: isDark ? Colors.dark.primaryContainer : Colors.primaryContainer }]}>
+                    <FontAwesome5 name="sticky-note" size={13} color={Colors.primary} />
+                  </View>
+                  <View style={styles.infoTextWrap}>
+                    <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>Note</Text>
+                    <Text style={[styles.infoValue, styles.noteValue, { color: colors.textPrimary }]}>{note}</Text>
+                  </View>
+                </View>
+              </>
+            ) : null}
           </View>
 
           {/* Done button */}
@@ -214,6 +232,10 @@ const styles = StyleSheet.create({
   infoValue: {
     ...Typography.bodyLarge,
     fontWeight: '600',
+  },
+  noteValue: {
+    fontWeight: '400',
+    lineHeight: 22,
   },
   statusBadge: {
     flexDirection: 'row',

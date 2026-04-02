@@ -17,8 +17,9 @@ export const CalendarScreen: React.FC = () => {
   const [logDetailsVisible, setLogDetailsVisible] = React.useState(false);
   const [logModalDate, setLogModalDate] = React.useState('');
   const [logModalTime, setLogModalTime] = React.useState<string | null>(null);
+  const [logModalNote, setLogModalNote] = React.useState<string | undefined>(undefined);
 
-  const { logs, selectedActivityId, activities } = useAttendanceStore();
+  const { logs, notes, selectedActivityId, activities } = useAttendanceStore();
   const selectedActivity = activities.find(a => a.id === selectedActivityId);
   const loggedDates = selectedActivityId ? logs[selectedActivityId] || [] : [];
   const today = todayStr();
@@ -65,6 +66,11 @@ export const CalendarScreen: React.FC = () => {
                 setLogModalDate(dayjs(day.dateString).format('MMMM D, YYYY'));
                 setLogModalTime(null);
               }
+              // Look up note for this date
+              const note = selectedActivityId
+                ? notes[selectedActivityId]?.[day.dateString]
+                : undefined;
+              setLogModalNote(note);
               setLogDetailsVisible(true);
             }
           }}
@@ -98,6 +104,7 @@ export const CalendarScreen: React.FC = () => {
         visible={logDetailsVisible}
         dateStr={logModalDate}
         timeStr={logModalTime}
+        note={logModalNote}
         activityName={selectedActivity?.name}
         onClose={() => setLogDetailsVisible(false)}
       />

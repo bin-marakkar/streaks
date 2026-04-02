@@ -30,12 +30,13 @@ export const ActivitiesScreen: React.FC = () => {
   const [editingItemName, setEditingItemName] = useState<string>('');
 
   const { activities, createActivity, editActivity, deleteActivity, selectActivity, getActivityStats } = useAttendanceStore();
+  const [editingRequiresNote, setEditingRequiresNote] = useState<boolean>(false);
 
-  const handleSaveActivity = (name: string) => {
+  const handleSaveActivity = (name: string, requiresNote: boolean) => {
     if (editingItemId) {
-      editActivity(editingItemId, name);
+      editActivity(editingItemId, name, requiresNote);
     } else {
-      createActivity(name);
+      createActivity(name, requiresNote);
     }
     closeModal();
   };
@@ -48,8 +49,10 @@ export const ActivitiesScreen: React.FC = () => {
   };
 
   const openEditModal = (id: string, currentName: string) => {
+    const activity = activities.find(a => a.id === id);
     setEditingItemId(id);
     setEditingItemName(currentName);
+    setEditingRequiresNote(activity?.requiresNote ?? false);
     setSelectedItemId(null);
     setIsModalVisible(true);
   };
@@ -58,6 +61,7 @@ export const ActivitiesScreen: React.FC = () => {
     setIsModalVisible(false);
     setEditingItemId(null);
     setEditingItemName('');
+    setEditingRequiresNote(false);
   };
 
   const handleSelectActivity = (id: string) => {
@@ -181,6 +185,7 @@ export const ActivitiesScreen: React.FC = () => {
           visible={isModalVisible}
           editingItemId={editingItemId}
           initialName={editingItemName}
+          initialRequiresNote={editingRequiresNote}
           onClose={closeModal}
           onSave={handleSaveActivity}
         />

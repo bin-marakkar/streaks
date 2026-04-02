@@ -7,13 +7,15 @@ export interface Activity {
   id: string;
   name: string;
   createdAt: number;
+  requiresNote?: boolean;
 }
 
-
+// Notes: { [activityId]: { [dateStr YYYY-MM-DD]: noteText } }
+export type NotesMap = Record<string, Record<string, string>>;
 
 /**
  * Attendance Service
- * Handles persistence of activities and logged dates via AsyncStorage.
+ * Handles persistence of activities, logged dates, and notes via AsyncStorage.
  */
 export const attendanceService = {
   getActivities: async (): Promise<Activity[]> => {
@@ -50,7 +52,21 @@ export const attendanceService = {
     await AsyncStorage.setItem(StorageKeys.LOGS, JSON.stringify(logs));
   },
 
-  logToday: async (activityId: string): Promise<boolean> => {
+  getNotes: async (): Promise<NotesMap> => {
+    try {
+      const raw = await AsyncStorage.getItem(StorageKeys.NOTES);
+      if (!raw) return {};
+      return JSON.parse(raw) as NotesMap;
+    } catch {
+      return {};
+    }
+  },
+
+  saveNotes: async (notes: NotesMap): Promise<void> => {
+    await AsyncStorage.setItem(StorageKeys.NOTES, JSON.stringify(notes));
+  },
+
+  logToday: async (activityId: string, note?: string): Promise<boolean> => {
     const logs = await attendanceService.getLogs();
     const today = todayStr();
 
@@ -61,18 +77,29 @@ export const attendanceService = {
 
     logs[activityId] = [...activityLogs, dayjs().toISOString()];
     await attendanceService.saveLogs(logs);
+
+    // Persist the note if one was provided
+    if (note && note.trim()) {
+      const notes = await attendanceService.getNotes();
+      if (!notes[activityId]) notes[activityId] = {};
+      notes[activityId][today] = note.trim();
+      await attendanceService.saveNotes(notes);
+    }
+
     return true;
   },
 
   clearAll: async (): Promise<void> => {
     await AsyncStorage.removeItem(StorageKeys.ACTIVITIES);
     await AsyncStorage.removeItem(StorageKeys.LOGS);
+    await AsyncStorage.removeItem(StorageKeys.NOTES);
   },
 
   exportData: async (): Promise<string> => {
     const activities = await attendanceService.getActivities();
     const logs = await attendanceService.getLogs();
-    return JSON.stringify({ activities, logs });
+    const notes = await attendanceService.getNotes();
+    return JSON.stringify({ activities, logs, notes });
   },
 
   importData: async (jsonData: string): Promise<boolean> => {
@@ -81,7 +108,7 @@ export const attendanceService = {
       if (!parsed || typeof parsed !== 'object') return false;
       if (!Array.isArray(parsed.activities)) return false;
       if (!parsed.logs || typeof parsed.logs !== 'object') return false;
-      
+
       // Basic validation of activities
       for (const act of parsed.activities) {
         if (!act.id || !act.name) return false;
@@ -89,6 +116,12 @@ export const attendanceService = {
 
       await attendanceService.saveActivities(parsed.activities);
       await attendanceService.saveLogs(parsed.logs);
+
+      // Notes are optional (older exports won't have them)
+      if (parsed.notes && typeof parsed.notes === 'object') {
+        await attendanceService.saveNotes(parsed.notes);
+      }
+
       return true;
     } catch {
       return false;

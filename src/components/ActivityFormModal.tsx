@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   Pressable,
+  Switch,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import Animated, { FadeIn, SlideInDown, SlideOutDown, Easing } from 'react-native-reanimated';
@@ -21,30 +22,34 @@ export interface ActivityFormModalProps {
   visible: boolean;
   editingItemId: string | null;
   initialName: string;
+  initialRequiresNote?: boolean;
   onClose: () => void;
-  onSave: (name: string) => void;
+  onSave: (name: string, requiresNote: boolean) => void;
 }
 
 export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
   visible,
   editingItemId,
   initialName,
+  initialRequiresNote = false,
   onClose,
   onSave,
 }) => {
   const { colors, isDark } = useTheme();
   const [name, setName] = useState('');
+  const [requiresNote, setRequiresNote] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     if (visible) {
       setName(initialName);
+      setRequiresNote(initialRequiresNote);
     }
-  }, [visible, initialName]);
+  }, [visible, initialName, initialRequiresNote]);
 
   const handleSave = () => {
     if (!name.trim()) return;
-    onSave(name.trim());
+    onSave(name.trim(), requiresNote);
   };
 
   const isEditing = !!editingItemId;
@@ -63,11 +68,6 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
       </Animated.View>
 
-      {/*
-        KeyboardAvoidingView outside the backdrop so it can push the sheet up
-        without being clipped. Using 'padding' on both platforms gives the most
-        predictable "sheet rises with keyboard" behavior.
-      */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.kavWrapper}
@@ -120,6 +120,31 @@ export const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
             {name.length}/40
           </Text>
 
+          {/* Require note toggle */}
+          <View style={[styles.toggleRow, { backgroundColor: colors.background, borderColor: colors.surfaceVariant }]}>
+            <View style={[styles.toggleIconWrap, { backgroundColor: requiresNote ? (isDark ? Colors.dark.primaryContainer : Colors.primaryContainer) : colors.surfaceVariant }]}>
+              <FontAwesome5
+                name="sticky-note"
+                size={14}
+                color={requiresNote ? Colors.primary : colors.textSecondary}
+              />
+            </View>
+            <View style={styles.toggleTextWrap}>
+              <Text style={[styles.toggleLabel, { color: colors.textPrimary }]}>
+                Require a note when logging
+              </Text>
+              <Text style={[styles.toggleSub, { color: colors.textSecondary }]}>
+                You'll need to add a note each time you log
+              </Text>
+            </View>
+            <Switch
+              value={requiresNote}
+              onValueChange={setRequiresNote}
+              trackColor={{ false: colors.surfaceVariant, true: Colors.primaryContainer }}
+              thumbColor={requiresNote ? Colors.primary : colors.textSecondary}
+            />
+          </View>
+
           {/* Actions */}
           <View style={styles.actions}>
             <TouchableOpacity
@@ -160,7 +185,6 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.sm,
     paddingHorizontal: Spacing.lg,
     paddingBottom: Spacing.xxl,
-    // Shadow for the sheet
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.15,
@@ -200,14 +224,38 @@ const styles = StyleSheet.create({
   clearBtn: {
     paddingLeft: Spacing.sm,
   },
-  clearBtnText: {
-    fontSize: 14,
-    color: Colors.textDisabled,
-  },
   charCount: {
     ...Typography.bodySmall,
     textAlign: 'right',
+    marginBottom: Spacing.md,
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1.5,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
     marginBottom: Spacing.xl,
+    gap: Spacing.md,
+  },
+  toggleIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  toggleTextWrap: {
+    flex: 1,
+  },
+  toggleLabel: {
+    ...Typography.bodyMedium,
+    fontWeight: '600',
+  },
+  toggleSub: {
+    ...Typography.bodySmall,
+    marginTop: 2,
   },
   actions: {
     flexDirection: 'row',

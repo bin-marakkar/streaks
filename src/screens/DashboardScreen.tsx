@@ -17,20 +17,35 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { LogButton } from '../components/LogButton';
 import { StreakBadge } from '../components/StreakBadge';
+import { NoteInputModal } from '../components/NoteInputModal';
 import { Colors, Spacing, Typography, BorderRadius } from '../constants';
 import { formatDisplayDate, todayStr } from '../utils/dateUtils';
 import { useTheme } from '../hooks/useTheme';
 
 export const DashboardScreen: React.FC = () => {
   const { colors, isDark } = useTheme();
-  const { selectedActivityId, getActivityStats, logToday, isLoading } = useAttendanceStore();
+  const { selectedActivityId, activities, getActivityStats, logToday, isLoading } = useAttendanceStore();
+  const selectedActivity = activities.find(a => a.id === selectedActivityId);
   const stats = selectedActivityId
     ? getActivityStats(selectedActivityId)
     : { isTodayLogged: false, currentStreak: 0, longestStreak: 0 };
   const { isTodayLogged, currentStreak, longestStreak } = stats;
 
+  const [noteModalVisible, setNoteModalVisible] = React.useState(false);
+
   const handleLogToday = () => {
-    if (selectedActivityId) logToday(selectedActivityId);
+    if (!selectedActivityId) return;
+    if (selectedActivity?.requiresNote) {
+      setNoteModalVisible(true);
+    } else {
+      logToday(selectedActivityId);
+    }
+  };
+
+  const handleNoteSubmit = (note: string) => {
+    if (!selectedActivityId) return;
+    setNoteModalVisible(false);
+    logToday(selectedActivityId, note);
   };
 
   const headerScale = useSharedValue(0.9);
@@ -140,6 +155,13 @@ export const DashboardScreen: React.FC = () => {
             )}
         </Text>
       </Animated.View>
+
+      <NoteInputModal
+        visible={noteModalVisible}
+        activityName={selectedActivity?.name}
+        onClose={() => setNoteModalVisible(false)}
+        onSubmit={handleNoteSubmit}
+      />
     </ScrollView>
   );
 };

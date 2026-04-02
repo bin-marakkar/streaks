@@ -3,5 +3,6 @@
 export const StorageKeys = {
   ACTIVITIES: 'streak_activities',
   LOGS:       'streak_logs',
+  NOTES:      'streak_notes',
   THEME:      '@streak_counter_theme',
 } as const;
