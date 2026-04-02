@@ -47,8 +47,8 @@ export const getPastNDays = (n: number): string[] => {
  */
 export const loggedDaysThisMonth = (loggedDates: string[]): number => {
   const now = dayjs();
-  const prefix = now.format('YYYY-MM');
-  return loggedDates.filter((d) => d.startsWith(prefix)).length;
+  const currentMonthStr = now.format('YYYY-MM');
+  return loggedDates.filter((d) => dayjs(d).format('YYYY-MM') === currentMonthStr).length;
 };
 
 /**

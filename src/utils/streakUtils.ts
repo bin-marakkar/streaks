@@ -64,8 +64,9 @@ export const calculateLongestStreak = (loggedDates: string[]): number => {
   let currentStreak = 1;
 
   for (let i = 1; i < sorted.length; i++) {
-    const prev = dayjs(sorted[i - 1]);
-    const curr = dayjs(sorted[i]);
+    // Parse as UTC midnights to avoid any local Daylight Saving Time issues
+    const prev = dayjs(`${sorted[i - 1]}T00:00:00Z`);
+    const curr = dayjs(`${sorted[i]}T00:00:00Z`);
 
     // Check if dates are exactly 1 day apart
     if (curr.diff(prev, 'day') === 1) {
