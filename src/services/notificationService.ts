@@ -121,26 +121,26 @@ export const rescheduleAllNotifications = async (
     }
   }
 
-  // 4. Future days (1–7): schedule with all activity names as a conservative fallback.
-  //    When the app is opened on any of those days, this function re-runs and replaces
-  //    that day's entry (step 3 above) with accurate, unlogged-only content.
+  // 4. Standing daily evening reminder at 9 PM (repeating, OS-managed).
+  //    We use DAILY here intentionally — DATE-type triggers require SCHEDULE_EXACT_ALARM
+  //    which Android 12+ restricts in production. DAILY triggers are delivered by the OS
+  //    alarm infrastructure and fire even when the app is fully killed.
+  //    When the user opens the app, step 3 above cancels & replaces tonight's slot with
+  //    a precise one-shot recap, so this acts purely as the fallback for days the app
+  //    is never opened.
   const allNames = activities.map(a => a.name).join(', ');
-  for (let i = 1; i <= 7; i++) {
-    const futureAt9PM = new Date(now);
-    futureAt9PM.setDate(futureAt9PM.getDate() + i);
-    futureAt9PM.setHours(21, 0, 0, 0);
-    await Notifications.scheduleNotificationAsync({
-      content: {
-        title: 'Evening Check-in 🌙',
-        body: `Don't forget to log: ${allNames}`,
-        priority: Notifications.AndroidNotificationPriority.MAX,
-        sound: true,
-      },
-      trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.DATE,
-        date: futureAt9PM,
-        channelId: 'default',
-      },
-    });
-  }
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: 'Evening Check-in 🌙',
+      body: `Don't forget to log: ${allNames}`,
+      priority: Notifications.AndroidNotificationPriority.MAX,
+      sound: true,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DAILY,
+      hour: 21,
+      minute: 0,
+      channelId: 'default',
+    },
+  });
 };
