@@ -83,6 +83,10 @@ export const rescheduleAllNotifications = async (
   todayAt9PM.setHours(21, 0, 0, 0);
 
   if (now < todayAt9PM) {
+    // App was opened before 9PM — schedule a dynamic one-shot for tonight.
+    // The standing DAILY below always runs regardless, but Expo's DAILY trigger
+    // defers to the NEXT occurrence: when scheduled mid-day it fires tomorrow,
+    // not tonight — so there is no duplicate with this DATE trigger tonight.
     const unloggedToday = activities.filter(a => {
       const activityLogs = logs[a.id] || [];
       return !activityLogs.some(log => toLocalDate(log) === todayLocal);
@@ -122,12 +126,13 @@ export const rescheduleAllNotifications = async (
   }
 
   // 4. Standing daily evening reminder at 9 PM (repeating, OS-managed).
-  //    We use DAILY here intentionally — DATE-type triggers require SCHEDULE_EXACT_ALARM
-  //    which Android 12+ restricts in production. DAILY triggers are delivered by the OS
-  //    alarm infrastructure and fire even when the app is fully killed.
-  //    When the user opens the app, step 3 above cancels & replaces tonight's slot with
-  //    a precise one-shot recap, so this acts purely as the fallback for days the app
-  //    is never opened.
+  //    ALWAYS scheduled so that future days when the app is never opened still
+  //    get a notification. Expo's DAILY trigger fires at its next occurrence —
+  //    when scheduled before 9PM it defers to tomorrow (not tonight), so this
+  //    does NOT duplicate the one-shot DATE trigger above on the current day.
+  //    DATE-type triggers require SCHEDULE_EXACT_ALARM which Android 12+ restricts
+  //    in production; DAILY triggers are delivered by the OS alarm infrastructure
+  //    and fire even when the app is fully killed.
   const allNames = activities.map(a => a.name).join(', ');
   await Notifications.scheduleNotificationAsync({
     content: {

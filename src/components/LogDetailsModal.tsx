@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   },
   infoRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
   },
@@ -221,6 +221,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: Spacing.md,
+    marginTop: 2,
   },
   infoTextWrap: {
     flex: 1,
